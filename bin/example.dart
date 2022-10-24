@@ -107,7 +107,7 @@ void _evaluationsByValue() {
   print("2. Evaluate 'test false 2 1' directly to its simplest form: ");
   print('    $temp\n  = ' + temp.eval().toString());
   temp = Lambda(
-    type: LambdaType.ABSTRACTION,
+    type: LambdaType.abstraction,
     exp1: Lambda.applyAll(
       [LambdaConstants.lambdaIdentity, LambdaConstants.lambdaFalse],
     ),

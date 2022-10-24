@@ -2,10 +2,10 @@ import 'package:dartz/dartz.dart';
 
 /// Types of lambda expressions.
 enum LambdaType {
-  VARIABLE,
-  APPLICATION,
-  ABSTRACTION,
-  DUMMY,
+  variable,
+  application,
+  abstraction,
+  dummy,
 }
 
 /// The class representing lambda expressions.
@@ -15,11 +15,11 @@ class Lambda {
     this.index, // For variable
     this.exp1, // For application and abstraction
     this.exp2, // For application
-  }) : assert(!(type == LambdaType.VARIABLE &&
+  }) : assert(!(type == LambdaType.variable &&
                 (index == null || exp1 != null || exp2 != null)) &&
-            !(type == LambdaType.APPLICATION &&
+            !(type == LambdaType.application &&
                 (index != null || exp1 == null || exp2 == null)) &&
-            !(type == LambdaType.ABSTRACTION &&
+            !(type == LambdaType.abstraction &&
                 (index != null || exp1 == null || exp2 != null)));
   LambdaType type;
   int? index;
@@ -28,24 +28,24 @@ class Lambda {
 
   /// Construct a lambda variable with the given De Bruijn index.
   static Lambda fromIndex(int index) =>
-      Lambda(type: LambdaType.VARIABLE, index: index);
+      Lambda(type: LambdaType.variable, index: index);
 
   /// Construct the abstraction of a given lambda expression.
   static Lambda abstract(Lambda lambda) =>
-      Lambda(type: LambdaType.ABSTRACTION, exp1: lambda);
+      Lambda(type: LambdaType.abstraction, exp1: lambda);
 
   /// Apply a list of lambda expressions together from left to right.
   static Lambda applyAll(List<Lambda> lambdas) {
     if (lambdas.isEmpty) {
       return Lambda(
-        type: LambdaType.ABSTRACTION,
-        exp1: Lambda(type: LambdaType.VARIABLE, index: 0),
+        type: LambdaType.abstraction,
+        exp1: Lambda(type: LambdaType.variable, index: 0),
       );
     }
 
     return lambdas.reduce(
       (previousValue, element) => Lambda(
-        type: LambdaType.APPLICATION,
+        type: LambdaType.application,
         exp1: previousValue,
         exp2: element,
       ),
@@ -56,8 +56,8 @@ class Lambda {
   static Lambda applyAllReversed(List<Lambda> lambdas) {
     if (lambdas.isEmpty) {
       return Lambda(
-        type: LambdaType.ABSTRACTION,
-        exp1: Lambda(type: LambdaType.VARIABLE, index: 0),
+        type: LambdaType.abstraction,
+        exp1: Lambda(type: LambdaType.variable, index: 0),
       );
     }
 
@@ -68,7 +68,7 @@ class Lambda {
 
       final first = lambdas.removeAt(0);
       return Lambda(
-        type: LambdaType.APPLICATION,
+        type: LambdaType.application,
         exp1: first,
         exp2: applyAllReversed(lambdas),
       );
@@ -92,13 +92,12 @@ class Lambda {
     var param = initialParam;
 
     while (lambdaStack.isNotEmpty) {
-      print(lambdaStack.last);
-      if (lambdaStack.last.type == LambdaType.VARIABLE) {
+      if (lambdaStack.last.type == LambdaType.variable) {
         param = onVar?.call(lambdaStack.last, param) ?? param;
         while (true) {
           lambdaStack.removeLast();
           if (lambdaStack.isEmpty) break;
-          if (lambdaStack.last.type == LambdaType.ABSTRACTION) {
+          if (lambdaStack.last.type == LambdaType.abstraction) {
             isExp1Stack.removeLast();
             param = onAbsExit?.call(param) ?? param;
           } else if (isExp1Stack.last) {
@@ -112,7 +111,7 @@ class Lambda {
             param = onAppExit?.call(param) ?? param;
           }
         }
-      } else if (lambdaStack.last.type == LambdaType.ABSTRACTION) {
+      } else if (lambdaStack.last.type == LambdaType.abstraction) {
         lambdaStack.add(lambdaStack.last.exp1!);
         isExp1Stack.add(true);
         param = onAbsEnter?.call(param) ?? param;
@@ -137,25 +136,25 @@ class Lambda {
     T? Function(T?)? onAppExit,
   }) {
     final lambdaStack = [this];
-    final resultStack = <Lambda>[Lambda(type: LambdaType.DUMMY)];
+    final resultStack = <Lambda>[Lambda(type: LambdaType.dummy)];
     final isExp1Stack = [true];
     var param = initialParam;
 
     while (lambdaStack.isNotEmpty) {
-      if (lambdaStack.last.type == LambdaType.VARIABLE) {
+      if (lambdaStack.last.type == LambdaType.variable) {
         resultStack.last = onVar(lambdaStack.last, param);
         while (true) {
           lambdaStack.removeLast();
           if (lambdaStack.isEmpty) break;
           var tempLambda = resultStack.removeLast();
-          if (resultStack.last.type == LambdaType.ABSTRACTION) {
+          if (resultStack.last.type == LambdaType.abstraction) {
             resultStack.last.exp1 = tempLambda;
             isExp1Stack.removeLast();
             param = onAbsExit?.call(param) ?? param;
           } else if (isExp1Stack.last) {
             resultStack.last.exp1 = tempLambda;
             lambdaStack.add(lambdaStack.last.exp2!);
-            resultStack.add(Lambda(type: LambdaType.DUMMY));
+            resultStack.add(Lambda(type: LambdaType.dummy));
             isExp1Stack.last = false;
             param = onAppExit?.call(param) ?? param;
             param = onAppEnter?.call(param) ?? param;
@@ -166,15 +165,15 @@ class Lambda {
             param = onAppExit?.call(param) ?? param;
           }
         }
-      } else if (lambdaStack.last.type == LambdaType.ABSTRACTION) {
-        resultStack.last.type = LambdaType.ABSTRACTION;
-        resultStack.add(Lambda(type: LambdaType.DUMMY));
+      } else if (lambdaStack.last.type == LambdaType.abstraction) {
+        resultStack.last.type = LambdaType.abstraction;
+        resultStack.add(Lambda(type: LambdaType.dummy));
         lambdaStack.add(lambdaStack.last.exp1!);
         isExp1Stack.add(true);
         param = onAbsEnter?.call(param) ?? param;
       } else {
-        resultStack.last.type = LambdaType.APPLICATION;
-        resultStack.add(Lambda(type: LambdaType.DUMMY));
+        resultStack.last.type = LambdaType.application;
+        resultStack.add(Lambda(type: LambdaType.dummy));
         lambdaStack.add(lambdaStack.last.exp1!);
         isExp1Stack.add(true);
         param = onAppEnter?.call(param) ?? param;
@@ -188,9 +187,9 @@ class Lambda {
   /// Clone this lambda expression.
   ///
   /// Avoids recursion.
-  Lambda clone() => fmap<Null>(
+  Lambda clone() => fmap<void>(
         onVar: (lambda, _) => Lambda(
-          type: LambdaType.VARIABLE,
+          type: LambdaType.variable,
           index: lambda.index,
         ),
       );
@@ -201,7 +200,7 @@ class Lambda {
   /// distinct free variables; otherwise count for the total appearances.
   int freeCount({bool isDistinct = false}) =>
       fold<int, Tuple3<int, int, Set<int>>>(
-        initialParam: Tuple3(0, 0, {}),
+        initialParam: const Tuple3(0, 0, {}),
         select: (tuple3) => tuple3.value1,
         onAbsEnter: (tuple3) => tuple3.copyWith(value2: tuple3.value2 + 1),
         onAbsExit: (tuple3) => tuple3.copyWith(value2: tuple3.value2 - 1),
@@ -223,49 +222,6 @@ class Lambda {
                 }
               },
       );
-  // {
-  //   var count = 0;
-  //   final lambdaStack = [this];
-  //   final isExp1Stack = [true];
-  //   var depth = 0;
-  //   final indices = <int>{};
-
-  //   while (lambdaStack.isNotEmpty) {
-  //     if (lambdaStack.last.type == LambdaType.VARIABLE) {
-  //       if (lambdaStack.last.index! >= depth) {
-  //         if (isDistinct && indices.contains(depth - lambdaStack.last.index!)) {
-  //         } else {
-  //           indices.add(depth - lambdaStack.last.index!);
-  //           count++;
-  //         }
-  //       }
-  //       while (true) {
-  //         lambdaStack.removeLast();
-  //         if (lambdaStack.isEmpty) break;
-  //         var tempLambda = lambdaStack.removeLast();
-  //         if (tempLambda.type == LambdaType.ABSTRACTION) {
-  //           isExp1Stack.removeLast();
-  //           depth--;
-  //         } else if (isExp1Stack.last) {
-  //           lambdaStack.add(tempLambda.exp2!);
-  //           isExp1Stack.last = false;
-  //           break;
-  //         } else {
-  //           isExp1Stack.removeLast();
-  //         }
-  //       }
-  //     } else if (lambdaStack.last.type == LambdaType.ABSTRACTION) {
-  //       lambdaStack.add(lambdaStack.last.exp1!);
-  //       isExp1Stack.add(true);
-  //       depth++;
-  //     } else {
-  //       lambdaStack.add(lambdaStack.last.exp1!);
-  //       isExp1Stack.add(true);
-  //     }
-  //   }
-
-  //   return count;
-  // }
 
   @override
   int get hashCode => toString().hashCode;
@@ -285,13 +241,13 @@ class Lambda {
 
     while (lambdaStack1.isNotEmpty) {
       if (lambdaStack1.last.type != lambdaStack2.last.type) return false;
-      if (lambdaStack1.last.type == LambdaType.VARIABLE) {
+      if (lambdaStack1.last.type == LambdaType.variable) {
         if (lambdaStack1.last.index != lambdaStack2.last.index) return false;
         while (true) {
           lambdaStack1.removeLast();
           lambdaStack2.removeLast();
           if (lambdaStack1.isEmpty) break;
-          if (lambdaStack1.last.type == LambdaType.ABSTRACTION) {
+          if (lambdaStack1.last.type == LambdaType.abstraction) {
             isExp1Stack.removeLast();
           } else if (isExp1Stack.last) {
             lambdaStack1.add(lambdaStack1.last.exp2!);
@@ -317,7 +273,7 @@ class Lambda {
   /// Avoids recursion.
   @override
   String toString() {
-    if (type == LambdaType.DUMMY) return '[DUMMY]';
+    if (type == LambdaType.dummy) return '[DUMMY]';
 
     final lambdaStack = <Lambda?>[];
     final sb = StringBuffer();
@@ -326,7 +282,7 @@ class Lambda {
     final useBraces = [false];
 
     while (true) {
-      if (cur.type == LambdaType.VARIABLE) {
+      if (cur.type == LambdaType.variable) {
         final curDepth = depth - cur.index!;
         if (curDepth > 0) {
           sb.write('x$curDepth');
@@ -341,7 +297,7 @@ class Lambda {
               sb.write(')');
             }
             lambdaStack.removeLast();
-          } else if (lambdaStack.last!.type == LambdaType.DUMMY) {
+          } else if (lambdaStack.last!.type == LambdaType.dummy) {
             useBraces.removeLast();
             if (useBraces.last) {
               sb.write(')');
@@ -356,14 +312,14 @@ class Lambda {
         cur = lambdaStack.removeLast()!;
         useBraces.removeLast();
         useBraces.add(true);
-      } else if (cur.type == LambdaType.APPLICATION) {
+      } else if (cur.type == LambdaType.application) {
         if (useBraces.last) {
           sb.write('(');
         }
-        lambdaStack.add(Lambda(type: LambdaType.DUMMY));
+        lambdaStack.add(Lambda(type: LambdaType.dummy));
         lambdaStack.add(cur.exp2);
         cur = cur.exp1!;
-        useBraces.add(cur.type == LambdaType.ABSTRACTION);
+        useBraces.add(cur.type == LambdaType.abstraction);
       } else {
         depth++;
         if (useBraces.last) {
