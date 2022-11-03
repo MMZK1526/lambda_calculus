@@ -211,7 +211,7 @@ Lambda? _lambdaParser(List<LambdaToken> tokens) {
           final lambda2 = lambdaStack.removeLast();
           final lambda1 = lambdaStack.removeLast();
           lambdaStack.add(
-            Lambda(type: LambdaType.application, exp1: lambda1, exp2: lambda2),
+            Lambda(form: LambdaForm.application, exp1: lambda1, exp2: lambda2),
           );
         }
         opStack.add(LambdaTokenType.space);
@@ -233,7 +233,7 @@ Lambda? _lambdaParser(List<LambdaToken> tokens) {
           final lambda2 = lambdaStack.removeLast();
           final lambda1 = lambdaStack.removeLast();
           lambdaStack.add(
-            Lambda(type: LambdaType.application, exp1: lambda1, exp2: lambda2),
+            Lambda(form: LambdaForm.application, exp1: lambda1, exp2: lambda2),
           );
         }
         break;
@@ -257,7 +257,7 @@ Lambda? _lambdaParser(List<LambdaToken> tokens) {
       final lambda2 = lambdaStack.removeLast();
       final lambda1 = lambdaStack.removeLast();
       lambdaStack.add(
-        Lambda(type: LambdaType.application, exp1: lambda1, exp2: lambda2),
+        Lambda(form: LambdaForm.application, exp1: lambda1, exp2: lambda2),
       );
       continue;
     }

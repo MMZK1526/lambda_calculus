@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
 
 /// Types of lambda expressions.
-enum LambdaType {
+enum LambdaForm {
   variable,
   application,
   abstraction,
@@ -11,41 +11,41 @@ enum LambdaType {
 /// The class representing lambda expressions.
 class Lambda {
   Lambda({
-    required this.type,
+    required this.form,
     this.index, // For variable
     this.exp1, // For application and abstraction
     this.exp2, // For application
-  }) : assert(!(type == LambdaType.variable &&
+  }) : assert(!(form == LambdaForm.variable &&
                 (index == null || exp1 != null || exp2 != null)) &&
-            !(type == LambdaType.application &&
+            !(form == LambdaForm.application &&
                 (index != null || exp1 == null || exp2 == null)) &&
-            !(type == LambdaType.abstraction &&
+            !(form == LambdaForm.abstraction &&
                 (index != null || exp1 == null || exp2 != null)));
-  LambdaType type;
+  LambdaForm form;
   int? index;
   Lambda? exp1;
   Lambda? exp2;
 
   /// Construct a lambda variable with the given De Bruijn index.
   static Lambda fromIndex(int index) =>
-      Lambda(type: LambdaType.variable, index: index);
+      Lambda(form: LambdaForm.variable, index: index);
 
   /// Construct the abstraction of a given lambda expression.
   static Lambda abstract(Lambda lambda) =>
-      Lambda(type: LambdaType.abstraction, exp1: lambda);
+      Lambda(form: LambdaForm.abstraction, exp1: lambda);
 
   /// Apply a list of lambda expressions together from left to right.
   static Lambda applyAll(List<Lambda> lambdas) {
     if (lambdas.isEmpty) {
       return Lambda(
-        type: LambdaType.abstraction,
-        exp1: Lambda(type: LambdaType.variable, index: 0),
+        form: LambdaForm.abstraction,
+        exp1: Lambda(form: LambdaForm.variable, index: 0),
       );
     }
 
     return lambdas.reduce(
       (previousValue, element) => Lambda(
-        type: LambdaType.application,
+        form: LambdaForm.application,
         exp1: previousValue,
         exp2: element,
       ),
@@ -56,8 +56,8 @@ class Lambda {
   static Lambda applyAllReversed(List<Lambda> lambdas) {
     if (lambdas.isEmpty) {
       return Lambda(
-        type: LambdaType.abstraction,
-        exp1: Lambda(type: LambdaType.variable, index: 0),
+        form: LambdaForm.abstraction,
+        exp1: Lambda(form: LambdaForm.variable, index: 0),
       );
     }
 
@@ -68,7 +68,7 @@ class Lambda {
 
       final first = lambdas.removeAt(0);
       return Lambda(
-        type: LambdaType.application,
+        form: LambdaForm.application,
         exp1: first,
         exp2: applyAllReversed(lambdas),
       );
@@ -92,12 +92,12 @@ class Lambda {
     var param = initialParam;
 
     while (lambdaStack.isNotEmpty) {
-      if (lambdaStack.last.type == LambdaType.variable) {
+      if (lambdaStack.last.form == LambdaForm.variable) {
         param = onVar?.call(lambdaStack.last, param) ?? param;
         while (true) {
           lambdaStack.removeLast();
           if (lambdaStack.isEmpty) break;
-          if (lambdaStack.last.type == LambdaType.abstraction) {
+          if (lambdaStack.last.form == LambdaForm.abstraction) {
             isExp1Stack.removeLast();
             param = onAbsExit?.call(param) ?? param;
           } else if (isExp1Stack.last) {
@@ -111,7 +111,7 @@ class Lambda {
             param = onAppExit?.call(param) ?? param;
           }
         }
-      } else if (lambdaStack.last.type == LambdaType.abstraction) {
+      } else if (lambdaStack.last.form == LambdaForm.abstraction) {
         lambdaStack.add(lambdaStack.last.exp1!);
         isExp1Stack.add(true);
         param = onAbsEnter?.call(param) ?? param;
@@ -136,25 +136,25 @@ class Lambda {
     T? Function(T?)? onAppExit,
   }) {
     final lambdaStack = [this];
-    final resultStack = <Lambda>[Lambda(type: LambdaType.dummy)];
+    final resultStack = <Lambda>[Lambda(form: LambdaForm.dummy)];
     final isExp1Stack = [true];
     var param = initialParam;
 
     while (lambdaStack.isNotEmpty) {
-      if (lambdaStack.last.type == LambdaType.variable) {
+      if (lambdaStack.last.form == LambdaForm.variable) {
         resultStack.last = onVar(lambdaStack.last, param);
         while (true) {
           lambdaStack.removeLast();
           if (lambdaStack.isEmpty) break;
           var tempLambda = resultStack.removeLast();
-          if (resultStack.last.type == LambdaType.abstraction) {
+          if (resultStack.last.form == LambdaForm.abstraction) {
             resultStack.last.exp1 = tempLambda;
             isExp1Stack.removeLast();
             param = onAbsExit?.call(param) ?? param;
           } else if (isExp1Stack.last) {
             resultStack.last.exp1 = tempLambda;
             lambdaStack.add(lambdaStack.last.exp2!);
-            resultStack.add(Lambda(type: LambdaType.dummy));
+            resultStack.add(Lambda(form: LambdaForm.dummy));
             isExp1Stack.last = false;
             param = onAppExit?.call(param) ?? param;
             param = onAppEnter?.call(param) ?? param;
@@ -165,15 +165,15 @@ class Lambda {
             param = onAppExit?.call(param) ?? param;
           }
         }
-      } else if (lambdaStack.last.type == LambdaType.abstraction) {
-        resultStack.last.type = LambdaType.abstraction;
-        resultStack.add(Lambda(type: LambdaType.dummy));
+      } else if (lambdaStack.last.form == LambdaForm.abstraction) {
+        resultStack.last.form = LambdaForm.abstraction;
+        resultStack.add(Lambda(form: LambdaForm.dummy));
         lambdaStack.add(lambdaStack.last.exp1!);
         isExp1Stack.add(true);
         param = onAbsEnter?.call(param) ?? param;
       } else {
-        resultStack.last.type = LambdaType.application;
-        resultStack.add(Lambda(type: LambdaType.dummy));
+        resultStack.last.form = LambdaForm.application;
+        resultStack.add(Lambda(form: LambdaForm.dummy));
         lambdaStack.add(lambdaStack.last.exp1!);
         isExp1Stack.add(true);
         param = onAppEnter?.call(param) ?? param;
@@ -189,7 +189,7 @@ class Lambda {
   /// Avoids recursion.
   Lambda clone() => fmap<void>(
         onVar: (lambda, _) => Lambda(
-          type: LambdaType.variable,
+          form: LambdaForm.variable,
           index: lambda.index,
         ),
       );
@@ -240,14 +240,14 @@ class Lambda {
     final isExp1Stack = [true];
 
     while (lambdaStack1.isNotEmpty) {
-      if (lambdaStack1.last.type != lambdaStack2.last.type) return false;
-      if (lambdaStack1.last.type == LambdaType.variable) {
+      if (lambdaStack1.last.form != lambdaStack2.last.form) return false;
+      if (lambdaStack1.last.form == LambdaForm.variable) {
         if (lambdaStack1.last.index != lambdaStack2.last.index) return false;
         while (true) {
           lambdaStack1.removeLast();
           lambdaStack2.removeLast();
           if (lambdaStack1.isEmpty) break;
-          if (lambdaStack1.last.type == LambdaType.abstraction) {
+          if (lambdaStack1.last.form == LambdaForm.abstraction) {
             isExp1Stack.removeLast();
           } else if (isExp1Stack.last) {
             lambdaStack1.add(lambdaStack1.last.exp2!);
@@ -273,7 +273,7 @@ class Lambda {
   /// Avoids recursion.
   @override
   String toString() {
-    if (type == LambdaType.dummy) return '[DUMMY]';
+    if (form == LambdaForm.dummy) return '[DUMMY]';
 
     final lambdaStack = <Lambda?>[];
     final sb = StringBuffer();
@@ -282,7 +282,7 @@ class Lambda {
     final useBraces = [false];
 
     while (true) {
-      if (cur.type == LambdaType.variable) {
+      if (cur.form == LambdaForm.variable) {
         final curDepth = depth - cur.index!;
         if (curDepth > 0) {
           sb.write('x$curDepth');
@@ -297,7 +297,7 @@ class Lambda {
               sb.write(')');
             }
             lambdaStack.removeLast();
-          } else if (lambdaStack.last!.type == LambdaType.dummy) {
+          } else if (lambdaStack.last!.form == LambdaForm.dummy) {
             useBraces.removeLast();
             if (useBraces.last) {
               sb.write(')');
@@ -312,14 +312,14 @@ class Lambda {
         cur = lambdaStack.removeLast()!;
         useBraces.removeLast();
         useBraces.add(true);
-      } else if (cur.type == LambdaType.application) {
+      } else if (cur.form == LambdaForm.application) {
         if (useBraces.last) {
           sb.write('(');
         }
-        lambdaStack.add(Lambda(type: LambdaType.dummy));
+        lambdaStack.add(Lambda(form: LambdaForm.dummy));
         lambdaStack.add(cur.exp2);
         cur = cur.exp1!;
-        useBraces.add(cur.type == LambdaType.abstraction);
+        useBraces.add(cur.form == LambdaForm.abstraction);
       } else {
         depth++;
         if (useBraces.last) {

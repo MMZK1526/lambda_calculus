@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:lambda_calculus/lambda_calculus.dart';
 
 void main(List<String> arguments) {
@@ -5,7 +7,7 @@ void main(List<String> arguments) {
   // assuming you already know about untyped lambda-calculus.
   // Check out each function for more details.
 
-  print('PART I:  PURE UNTYPED LAMBDA CALCULUS\n');
+  print('PART I:   UNTYPED LAMBDA CALCULUS\n');
   _printExamples();
   _parseLambda();
   _evaluationsByValue();
@@ -13,25 +15,31 @@ void main(List<String> arguments) {
   _evaluationsByName();
   _factorial();
   print('');
+
+  print('PART II:  TYPED LAMBDA CALCULUS\n');
+  // TODO: Come up with more examples
+
+  final l = LambdaConstants.lambdaPair;
+  print("The type for $l is ${l.findType()}");
 }
 
 void _printExamples() {
   // This function prints out several useful lambda expressions.
 
   print('Some lambda expressions with minimal brackets: ');
-  print('Lambda Id:    ' + LambdaConstants.lambdaIdentity.toString());
-  print('Lambda True:  ' + LambdaConstants.lambdaTrue.toString());
-  print('Lambda False: ' + LambdaConstants.lambdaFalse.toString());
-  print('Lambda Test:  ' + LambdaConstants.lambdaTest.toString());
-  print('Lambda And:   ' + LambdaConstants.lambdaAnd.toString());
-  print('Lambda Pair:  ' + LambdaConstants.lambdaPair.toString());
-  print('Lambda Not:   ' + LambdaConstants.lambdaNot.toString());
-  print('Lambda Succ:  ' + LambdaConstants.lambdaSucc.toString());
-  print('Lambda Times: ' + LambdaConstants.lambdaTimes.toString());
-  print('Lambda Plus:  ' + LambdaConstants.lambdaPlus.toString());
-  print('Lambda Seven: ' + LambdaConstants.lambdaSeven.toString());
-  print('Omega:        ' + LambdaConstants.omega.toString());
-  print('Y-Combinator: ' + LambdaConstants.yCombinator.toString());
+  print('Lambda Id:    ${LambdaConstants.lambdaIdentity}');
+  print('Lambda True:  ${LambdaConstants.lambdaTrue}');
+  print('Lambda False: ${LambdaConstants.lambdaFalse}');
+  print('Lambda Test:  ${LambdaConstants.lambdaTest}');
+  print('Lambda And:   ${LambdaConstants.lambdaAnd}');
+  print('Lambda Pair:  ${LambdaConstants.lambdaPair}');
+  print('Lambda Not:   ${LambdaConstants.lambdaNot}');
+  print('Lambda Succ:  ${LambdaConstants.lambdaSucc}');
+  print('Lambda Times: ${LambdaConstants.lambdaTimes}');
+  print('Lambda Plus:  ${LambdaConstants.lambdaPlus}');
+  print('Lambda Seven: ${LambdaConstants.lambdaSeven}');
+  print('Omega:        ${LambdaConstants.omega}');
+  print('Y-Combinator: ${LambdaConstants.yCombinator}');
   print('');
 }
 
@@ -92,11 +100,11 @@ void _evaluationsByValue() {
   // We use the .eval1() method to evaluate a lambda expression by one step.
   print("1. Evaluate 'test true 2 1' step-by-step: ");
   print('    $temp');
-  print('  = ' + temp.eval1().toString());
-  print('  = ' + temp.eval1()!.eval1().toString());
-  print('  = ' + temp.eval1()!.eval1()!.eval1().toString());
-  print('  = ' + temp.eval1()!.eval1()!.eval1()!.eval1().toString());
-  print('  = ' + temp.eval1()!.eval1()!.eval1()!.eval1()!.eval1().toString());
+  print('  = ${temp.eval1()}');
+  print('  = ${temp.eval1()!.eval1()}');
+  print('  = ${temp.eval1()!.eval1()!.eval1()}');
+  print('  = ${temp.eval1()!.eval1()!.eval1()!.eval1()}');
+  print('  = ${temp.eval1()!.eval1()!.eval1()!.eval1()!.eval1()}');
   temp = Lambda.applyAll([
     LambdaConstants.lambdaTest,
     LambdaConstants.lambdaFalse,
@@ -105,16 +113,16 @@ void _evaluationsByValue() {
   ]);
   // We use the .eval() method to evaluate a lambda expression fully.
   print("2. Evaluate 'test false 2 1' directly to its simplest form: ");
-  print('    $temp\n  = ' + temp.eval().toString());
+  print('    $temp\n  = ${temp.eval()}');
   temp = Lambda(
-    type: LambdaType.abstraction,
+    form: LambdaForm.abstraction,
     exp1: Lambda.applyAll(
       [LambdaConstants.lambdaIdentity, LambdaConstants.lambdaFalse],
     ),
   );
   // Demonstration of the "call by value" scheme.
   print('3. An application within an abstraction is not reduced: ');
-  print('    $temp\n  = ' + temp.eval().toString());
+  print('    $temp\n  = ${temp.eval()}');
   temp = Lambda.applyAll([
     LambdaConstants.lambdaSucc,
     LambdaConstants.lambdaTwo,
@@ -122,9 +130,9 @@ void _evaluationsByValue() {
   // Another example: 'succ 2' results an expression behaviourally equivalent to
   // but syntactically distinct from 3.
   print("4. Evaluate 'succ 2', but the result is not the same as '3': ");
-  print('    $temp\n  = ' + temp.eval().toString());
+  print('    $temp\n  = ${temp.eval()}');
   print("5. Evaluate 'succ 2', converting it to a natural number: ");
-  print('    $temp\n  = ' + temp.toInt().toString());
+  print('    $temp\n  = ${temp.toInt()}');
   print('');
 }
 
@@ -145,8 +153,7 @@ void _fullEvaluations() {
   // beta-reduction.
   print("1. Evaluate '2 + 3' directly to its simplest form: ");
   print('    $temp');
-  print('  = ' +
-      temp.eval(evalType: LambdaEvaluationType.fullReduction).toString());
+  print('  = ${temp.eval(evalType: LambdaEvaluationType.fullReduction)}');
   temp = Lambda.applyAll([
     LambdaConstants.lambdaTimes,
     LambdaConstants.lambdaTwo,
@@ -154,8 +161,7 @@ void _fullEvaluations() {
   ]);
   print("2. Evaluate '2 * 3' directly to its simplest form: ");
   print('    $temp');
-  print('  = ' +
-      temp.eval(evalType: LambdaEvaluationType.fullReduction).toString());
+  print('  = ${temp.eval(evalType: LambdaEvaluationType.fullReduction)}');
   temp = Lambda.applyAll([
     LambdaConstants.lambdaPower,
     LambdaConstants.lambdaTwo,
@@ -163,8 +169,7 @@ void _fullEvaluations() {
   ]);
   print("3. Evaluate '2 ^ 3' directly to its simplest form: ");
   print('    $temp');
-  print('  = ' +
-      temp.eval(evalType: LambdaEvaluationType.fullReduction).toString());
+  print('  = ${temp.eval(evalType: LambdaEvaluationType.fullReduction)}');
   print('');
 }
 
@@ -185,21 +190,17 @@ void _evaluationsByName() {
   // "call-by-name" scheme.
   print("1. Evaluate 'true 1 omega' lazily (call by name): ");
   print('    $temp');
-  print('  = ' +
-      temp.eval1(evalType: LambdaEvaluationType.callByName).toString());
-  print('  = ' +
-      temp
-          .eval1(evalType: LambdaEvaluationType.callByName)!
-          .eval1(evalType: LambdaEvaluationType.callByName)
-          .toString());
+  print('  = ${temp.eval1(evalType: LambdaEvaluationType.callByName)}');
+  print(
+      '  = ${temp.eval1(evalType: LambdaEvaluationType.callByName)!.eval1(evalType: LambdaEvaluationType.callByName)}');
   // In contrast, the expression diverges in a "call by value" scheme.
   print("2. Evaluate 'true 1 omega' strictly (call by value): ");
   print('    $temp');
-  print('  = ' + temp.eval1().toString());
-  print('  = ' + temp.eval1()!.eval1().toString());
-  print('  = ' + temp.eval1()!.eval1()!.eval1().toString());
-  print('  = ' + temp.eval1()!.eval1()!.eval1()!.eval1().toString());
-  print('  = ' + temp.eval1()!.eval1()!.eval1()!.eval1()!.eval1().toString());
+  print('  = ${temp.eval1()}');
+  print('  = ${temp.eval1()!.eval1()}');
+  print('  = ${temp.eval1()!.eval1()!.eval1()}');
+  print('  = ${temp.eval1()!.eval1()!.eval1()!.eval1()}');
+  print('  = ${temp.eval1()!.eval1()!.eval1()!.eval1()!.eval1()}');
   print('  ...');
   print('');
 }

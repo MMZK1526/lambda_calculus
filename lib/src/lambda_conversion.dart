@@ -28,7 +28,7 @@ extension LambdaConversionExtension on Lambda {
     Lambda.abstract(
       Lambda.abstract(
         Lambda(
-          type: LambdaType.application,
+          form: LambdaForm.application,
           exp1: Lambda.fromIndex(1),
           exp2: Lambda.applyAll([
             Lambda.fromIndex(2),
@@ -51,7 +51,7 @@ extension LambdaConversionExtension on Lambda {
           .exp1!
           .exp1!;
       var num = 0;
-      while (temp.type == LambdaType.application) {
+      while (temp.form == LambdaForm.application) {
         num++;
         if (temp.exp1?.index != 1) return -1;
         temp = temp.exp2!;

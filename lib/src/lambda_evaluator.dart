@@ -16,7 +16,7 @@ extension LambdaEvaluationExtension on Lambda {
   Lambda _shift(int amount, int cutoff) => fmap<int>(
         initialParam: 0,
         onVar: (lambda, depth) => Lambda(
-          type: LambdaType.variable,
+          form: LambdaForm.variable,
           index: lambda.index! >= cutoff + depth!
               ? lambda.index! + amount
               : lambda.index,
@@ -41,7 +41,7 @@ extension LambdaEvaluationExtension on Lambda {
 
   Lambda _betaReduction() {
     assert(
-      type == LambdaType.application && exp1!.type == LambdaType.abstraction,
+      form == LambdaForm.application && exp1!.form == LambdaForm.abstraction,
     );
 
     return exp1!.exp1!._substitution(exp2!._shift(1, 0))._shift(-1, 0);
@@ -79,14 +79,14 @@ extension LambdaEvaluationExtension on Lambda {
         var isReduced = false;
         Lambda? result;
         while (lambdaStack.isNotEmpty) {
-          if (lambdaStack.last.type == LambdaType.variable || isReduced) {
+          if (lambdaStack.last.form == LambdaForm.variable || isReduced) {
             while (true) {
               final temp = lambdaStack.removeLast();
               if (lambdaStack.isEmpty) {
                 result = temp;
                 break;
               }
-              if (lambdaStack.last.type == LambdaType.abstraction) {
+              if (lambdaStack.last.form == LambdaForm.abstraction) {
                 lambdaStack.last.exp1 = temp;
                 isExp1Stack.removeLast();
               } else if (isExp1Stack.last) {
@@ -99,11 +99,11 @@ extension LambdaEvaluationExtension on Lambda {
                 isExp1Stack.removeLast();
               }
             }
-          } else if (lambdaStack.last.type == LambdaType.abstraction) {
+          } else if (lambdaStack.last.form == LambdaForm.abstraction) {
             lambdaStack.add(lambdaStack.last.exp1!);
             isExp1Stack.add(true);
           } else {
-            if (lambdaStack.last.exp1!.type == LambdaType.abstraction) {
+            if (lambdaStack.last.exp1!.form == LambdaForm.abstraction) {
               lambdaStack.last = lambdaStack.last._betaReduction();
               isReduced = true;
             } else {
@@ -121,7 +121,7 @@ extension LambdaEvaluationExtension on Lambda {
         var isReduced = false;
         Lambda? result;
         while (lambdaStack.isNotEmpty) {
-          if (lambdaStack.last.type != LambdaType.application || isReduced) {
+          if (lambdaStack.last.form != LambdaForm.application || isReduced) {
             while (true) {
               final temp = lambdaStack.removeLast();
               if (lambdaStack.isEmpty) {
@@ -139,7 +139,7 @@ extension LambdaEvaluationExtension on Lambda {
               }
             }
           } else {
-            if (lambdaStack.last.exp1!.type == LambdaType.abstraction) {
+            if (lambdaStack.last.exp1!.form == LambdaForm.abstraction) {
               lambdaStack.last = lambdaStack.last._betaReduction();
               isReduced = true;
             } else {
@@ -157,7 +157,7 @@ extension LambdaEvaluationExtension on Lambda {
         var isReduced = false;
         Lambda? result;
         while (lambdaStack.isNotEmpty) {
-          if (lambdaStack.last.type != LambdaType.application || isReduced) {
+          if (lambdaStack.last.form != LambdaForm.application || isReduced) {
             while (true) {
               final temp = lambdaStack.removeLast();
               if (lambdaStack.isEmpty) {
@@ -175,11 +175,11 @@ extension LambdaEvaluationExtension on Lambda {
               }
             }
           } else {
-            if (lambdaStack.last.exp1!.type == LambdaType.abstraction &&
-                lambdaStack.last.exp2!.type == LambdaType.abstraction) {
+            if (lambdaStack.last.exp1!.form == LambdaForm.abstraction &&
+                lambdaStack.last.exp2!.form == LambdaForm.abstraction) {
               lambdaStack.last = lambdaStack.last._betaReduction();
               isReduced = true;
-            } else if (lambdaStack.last.exp1!.type != LambdaType.abstraction) {
+            } else if (lambdaStack.last.exp1!.form != LambdaForm.abstraction) {
               lambdaStack.add(lambdaStack.last.exp1!);
               isExp1Stack.add(true);
             } else {

@@ -171,16 +171,16 @@ class LambdaConstants {
   /// schemes.
   static final yCombinator = Lambda.abstract(
     Lambda(
-      type: LambdaType.application,
+      form: LambdaForm.application,
       exp1: Lambda.abstract(
         Lambda(
-          type: LambdaType.application,
+          form: LambdaForm.application,
           exp1: Lambda.fromIndex(1),
           exp2: Lambda.abstract(
             Lambda(
-              type: LambdaType.application,
+              form: LambdaForm.application,
               exp1: Lambda(
-                type: LambdaType.application,
+                form: LambdaForm.application,
                 exp1: Lambda.fromIndex(1),
                 exp2: Lambda.fromIndex(1),
               ),
@@ -191,13 +191,13 @@ class LambdaConstants {
       ),
       exp2: Lambda.abstract(
         Lambda(
-          type: LambdaType.application,
+          form: LambdaForm.application,
           exp1: Lambda.fromIndex(1),
           exp2: Lambda.abstract(
             Lambda(
-              type: LambdaType.application,
+              form: LambdaForm.application,
               exp1: Lambda(
-                type: LambdaType.application,
+                form: LambdaForm.application,
                 exp1: Lambda.fromIndex(1),
                 exp2: Lambda.fromIndex(1),
               ),
