@@ -12,11 +12,13 @@ enum LambdaTokenType {
 /// The class representing lambda tokens after lexing.
 class LambdaToken {
   LambdaToken(
-    this.type,
+    this.type, {
     this.index,
-  );
+    this.name,
+  });
   final LambdaTokenType type;
   final int? index;
+  final String? name;
 
   @override
   String toString() {
@@ -56,7 +58,7 @@ List<LambdaToken>? _lambdaLexer(String str) {
       // MARK: Left Bracket
       case r'(':
         bracketStack.add(0);
-        tokens.add(LambdaToken(LambdaTokenType.lbrace, null));
+        tokens.add(LambdaToken(LambdaTokenType.lbrace));
         break;
       // MARK: Right Bracket
       case r')':
@@ -64,12 +66,12 @@ List<LambdaToken>? _lambdaLexer(String str) {
         if (bracketStack.length == 1) return null;
         // Remove out-of-scope variables.
         boundedVarStack.removeRange(0, bracketStack.removeLast());
-        tokens.add(LambdaToken(LambdaTokenType.rbrace, null));
+        tokens.add(LambdaToken(LambdaTokenType.rbrace));
         // MARK: Space if Necessary
         if (iterator.moveNext()) {
           if (blank.hasMatch(String.fromCharCode(iterator.current)) ||
               String.fromCharCode(iterator.current) != ')') {
-            tokens.add(LambdaToken(LambdaTokenType.space, null));
+            tokens.add(LambdaToken(LambdaTokenType.space));
           }
           iterator.movePrevious();
         }
@@ -84,12 +86,12 @@ List<LambdaToken>? _lambdaLexer(String str) {
         final tempVarBuffer = StringBuffer();
         // MARK: Anonymous Variable
         if (String.fromCharCode(iterator.current) == '.') {
-          tokens.add(LambdaToken(LambdaTokenType.lambda, null));
+          tokens.add(LambdaToken(LambdaTokenType.lambda));
           boundedVarStack.insert(0, '');
           break;
         }
         if (!alpha.hasMatch(String.fromCharCode(iterator.current))) {
-          tokens.add(LambdaToken(LambdaTokenType.lambda, null));
+          tokens.add(LambdaToken(LambdaTokenType.lambda));
           boundedVarStack.insert(0, '');
           iterator.movePrevious();
           break;
@@ -106,7 +108,7 @@ List<LambdaToken>? _lambdaLexer(String str) {
         iterator.movePrevious();
 
         final tempVar = tempVarBuffer.toString();
-        tokens.add(LambdaToken(LambdaTokenType.lambda, null));
+        tokens.add(LambdaToken(LambdaTokenType.lambda, name: tempVar));
         boundedVarStack.insert(0, tempVar);
         break;
       default:
@@ -124,18 +126,24 @@ List<LambdaToken>? _lambdaLexer(String str) {
           var index = boundedVarStack.indexOf(tempVar);
           if (index != -1) {
             // Bounded variable.
-            tokens.add(LambdaToken(LambdaTokenType.variable, index));
+            tokens.add(LambdaToken(
+              LambdaTokenType.variable,
+              index: index,
+              name: tempVar,
+            ));
           } else if ((index = freeVarStack.indexOf(tempVar)) != -1) {
             // Free variable (appeared before).
             tokens.add(LambdaToken(
               LambdaTokenType.variable,
-              boundedVarStack.length + index,
+              index: boundedVarStack.length + index,
+              name: tempVar,
             ));
           } else {
             // Free variable (first appearance).
             tokens.add(LambdaToken(
               LambdaTokenType.variable,
-              boundedVarStack.length + freeVarStack.length,
+              index: boundedVarStack.length + freeVarStack.length,
+              name: tempVar,
             ));
             freeVarStack.add(tempVar);
           }
@@ -144,7 +152,7 @@ List<LambdaToken>? _lambdaLexer(String str) {
           if (iterator.current >= 0 &&
               (blank.hasMatch(String.fromCharCode(iterator.current)) ||
                   String.fromCharCode(iterator.current) == '(')) {
-            tokens.add(LambdaToken(LambdaTokenType.space, null));
+            tokens.add(LambdaToken(LambdaTokenType.space));
           }
           iterator.movePrevious();
 
@@ -160,7 +168,7 @@ List<LambdaToken>? _lambdaLexer(String str) {
           }
           // Does not support De Bruijn Index for free variables.
           if (index >= boundedVarStack.length) return null;
-          tokens.add(LambdaToken(LambdaTokenType.variable, index));
+          tokens.add(LambdaToken(LambdaTokenType.variable, index: index));
 
           if (iterator.current >= 0) {
             // Does not allow letters immediately after an index.
@@ -170,7 +178,7 @@ List<LambdaToken>? _lambdaLexer(String str) {
             // MARK: Space if Necessary
             if (blank.hasMatch(String.fromCharCode(iterator.current)) ||
                 String.fromCharCode(iterator.current) == '(') {
-              tokens.add(LambdaToken(LambdaTokenType.space, null));
+              tokens.add(LambdaToken(LambdaTokenType.space));
             }
             iterator.movePrevious();
           }
@@ -191,7 +199,8 @@ List<LambdaToken>? _lambdaLexer(String str) {
 /// Returns null if the tokens do not represent a valid lambda expression.
 Lambda? _lambdaParser(List<LambdaToken> tokens) {
   final lambdaStack = <Lambda>[];
-  final opStack = <LambdaTokenType>[LambdaTokenType.rbrace];
+  final opStack = [LambdaTokenType.rbrace];
+  final varStack = <String?>[];
 
   if (tokens.isEmpty) return null;
 
@@ -202,6 +211,7 @@ Lambda? _lambdaParser(List<LambdaToken> tokens) {
       // Has lowest precedence.
       case LambdaTokenType.lambda:
         opStack.add(LambdaTokenType.lambda);
+        varStack.add(token.name);
         break;
       // MARK: Application
       // Has hitghes precedence.
@@ -227,7 +237,8 @@ Lambda? _lambdaParser(List<LambdaToken> tokens) {
           if (op == LambdaTokenType.lbrace) break;
           if (op == LambdaTokenType.rbrace) return null;
           if (op == LambdaTokenType.lambda) {
-            lambdaStack.add(Lambda.abstract(lambdaStack.removeLast()));
+            final varName = varStack.removeLast();
+            lambdaStack.add(Lambda.abstract(lambdaStack.removeLast(), varName));
             continue;
           }
           final lambda2 = lambdaStack.removeLast();
@@ -238,7 +249,7 @@ Lambda? _lambdaParser(List<LambdaToken> tokens) {
         }
         break;
       case LambdaTokenType.variable:
-        lambdaStack.add(Lambda.fromIndex(token.index!));
+        lambdaStack.add(Lambda.fromIndex(token.index!, token.name));
         break;
     }
   }
@@ -248,7 +259,8 @@ Lambda? _lambdaParser(List<LambdaToken> tokens) {
     // MARK: Lambda
     if (op == LambdaTokenType.lambda) {
       if (lambdaStack.isEmpty) return null;
-      lambdaStack.add(Lambda.abstract(lambdaStack.removeLast()));
+      final varName = varStack.removeLast();
+      lambdaStack.add(Lambda.abstract(lambdaStack.removeLast(), varName));
       continue;
     }
     // MARK: Application

@@ -19,7 +19,7 @@ void main(List<String> arguments) {
   print('PART II:  TYPED LAMBDA CALCULUS\n');
   // TODO: Come up with more examples
 
-  final l = LambdaConstants.lambdaPair;
+  final l = r"\f. \g. \x. f (g x)".toLambda()!;
   print("The type for $l is ${l.findType()}");
 }
 

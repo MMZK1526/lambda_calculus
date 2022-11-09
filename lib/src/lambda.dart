@@ -5,7 +5,7 @@ enum LambdaForm {
   variable,
   application,
   abstraction,
-  dummy,
+  dummy, // No meaning; for parsing purpose
 }
 
 /// The class representing lambda expressions.
@@ -13,26 +13,44 @@ class Lambda {
   Lambda({
     required this.form,
     this.index, // For variable
-    this.exp1, // For application and abstraction
-    this.exp2, // For application
+    this.name,
+    Lambda? exp1, // For application and abstraction
+    Lambda? exp2, // For application
   }) : assert(!(form == LambdaForm.variable &&
                 (index == null || exp1 != null || exp2 != null)) &&
             !(form == LambdaForm.application &&
-                (index != null || exp1 == null || exp2 == null)) &&
+                (index != null ||
+                    name != null ||
+                    exp1 == null ||
+                    exp2 == null)) &&
             !(form == LambdaForm.abstraction &&
-                (index != null || exp1 == null || exp2 != null)));
+                (index != null || exp1 == null || exp2 != null))) {
+    // switch (form) {
+    //   case LambdaForm.variable:
+    //     this.name = name ?? "x";
+    //     break;
+    //   default:
+    // }
+    this.exp1 = exp1;
+    this.exp2 = exp2;
+  }
+
   LambdaForm form;
   int? index;
+  String? name;
   Lambda? exp1;
   Lambda? exp2;
+  Map<String, int> boundedVars = {};
 
-  /// Construct a lambda variable with the given De Bruijn index.
-  static Lambda fromIndex(int index) =>
-      Lambda(form: LambdaForm.variable, index: index);
+  /// Construct a lambda variable with the given De Bruijn index and name
+  /// (optional).
+  static Lambda fromIndex(int index, [String? name]) =>
+      Lambda(form: LambdaForm.variable, index: index, name: name);
 
-  /// Construct the abstraction of a given lambda expression.
-  static Lambda abstract(Lambda lambda) =>
-      Lambda(form: LambdaForm.abstraction, exp1: lambda);
+  /// Construct the abstraction of a given lambda expression, with an optional
+  /// name of the argument.
+  static Lambda abstract(Lambda lambda, [String? name]) =>
+      Lambda(form: LambdaForm.abstraction, exp1: lambda, name: name);
 
   /// Apply a list of lambda expressions together from left to right.
   static Lambda applyAll(List<Lambda> lambdas) {
@@ -191,6 +209,7 @@ class Lambda {
         onVar: (lambda, _) => Lambda(
           form: LambdaForm.variable,
           index: lambda.index,
+          name: lambda.name,
         ),
       );
 
@@ -284,10 +303,12 @@ class Lambda {
     while (true) {
       if (cur.form == LambdaForm.variable) {
         final curDepth = depth - cur.index!;
-        if (curDepth > 0) {
-          sb.write('x$curDepth');
+        if (cur.name != null) {
+          sb.write(cur.name);
+        } else if (curDepth > 0) {
+          sb.write('_x$curDepth');
         } else {
-          sb.write('y${1 - curDepth}');
+          sb.write('_y${1 - curDepth}');
         }
         while (lambdaStack.isNotEmpty) {
           if (lambdaStack.last == null) {
@@ -325,10 +346,12 @@ class Lambda {
         if (useBraces.last) {
           sb.write('(');
         }
-        if (depth > 0) {
-          sb.write('λx$depth. ');
+        if (cur.name != null) {
+          sb.write('λ${cur.name}. ');
+        } else if (depth > 0) {
+          sb.write('λ_x$depth. ');
         } else {
-          sb.write('λy${1 - depth}');
+          sb.write('λ_y${1 - depth}');
         }
         lambdaStack.add(null);
         useBraces.add(false);
