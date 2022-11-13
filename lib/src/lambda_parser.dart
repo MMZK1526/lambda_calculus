@@ -51,6 +51,8 @@ List<LambdaToken>? _lambdaLexer(String str) {
   final alpha = RegExp(r'^[a-zA-Z]+$');
   final numeric = RegExp(r'^[0-9]+$');
   final alphanumeric = RegExp(r'^[a-zA-Z0-9]+$');
+  final xnumeric = RegExp(r'^x[0-9]+([^a-zA-Z0-9]+|$)');
+  final ynumeric = RegExp(r'^y[0-9]+([^a-zA-Z0-9]+|$)');
   final blank = RegExp(r'^[\r\n\t\v ]+$');
 
   while (iterator.moveNext()) {
@@ -84,6 +86,7 @@ List<LambdaToken>? _lambdaLexer(String str) {
         if (!iterator.moveNext()) return null;
         // Determine the name of the variable.
         final tempVarBuffer = StringBuffer();
+
         // MARK: Anonymous Variable
         if (String.fromCharCode(iterator.current) == '.') {
           tokens.add(LambdaToken(LambdaTokenType.lambda));
@@ -96,6 +99,13 @@ List<LambdaToken>? _lambdaLexer(String str) {
           iterator.movePrevious();
           break;
         }
+
+        // MARK: Depth Variable are not allowed here
+        if (xnumeric.hasMatch(str.substring(iterator.rawIndex)) ||
+            ynumeric.hasMatch(str.substring(iterator.rawIndex))) {
+          return null;
+        }
+
         // MARK: Explicit Variable
         while (alphanumeric.hasMatch(String.fromCharCode(iterator.current))) {
           tempVarBuffer.write(String.fromCharCode(iterator.current));
@@ -114,6 +124,36 @@ List<LambdaToken>? _lambdaLexer(String str) {
       default:
         // MARK: Ignore Space
         if (blank.hasMatch(String.fromCharCode(iterator.current))) break;
+
+        // MARK: Depth Variable
+        if (xnumeric.hasMatch(str.substring(iterator.rawIndex)) ||
+            ynumeric.hasMatch(str.substring(iterator.rawIndex))) {
+          final isFree = String.fromCharCode(iterator.current) == 'y';
+          iterator.moveNext();
+          var index = 0;
+          while (numeric.hasMatch(String.fromCharCode(iterator.current))) {
+            index *= 10;
+            index += int.parse(String.fromCharCode(iterator.current));
+            if (!iterator.moveNext()) break;
+          }
+          if (!isFree && index > boundedVarStack.length) return null;
+          tokens.add(LambdaToken(
+            LambdaTokenType.variable,
+            index: isFree
+                ? boundedVarStack.length + index - 1
+                : boundedVarStack.length - index,
+          ));
+
+          // MARK: Space if Necessary
+          if (iterator.current >= 0 &&
+              (blank.hasMatch(String.fromCharCode(iterator.current)) ||
+                  String.fromCharCode(iterator.current) == '(')) {
+            tokens.add(LambdaToken(LambdaTokenType.space));
+          }
+          iterator.movePrevious();
+          break;
+        }
+
         // MARK: Named Variable
         if (alpha.hasMatch(String.fromCharCode(iterator.current))) {
           final tempVarBuffer = StringBuffer();
@@ -155,9 +195,9 @@ List<LambdaToken>? _lambdaLexer(String str) {
             tokens.add(LambdaToken(LambdaTokenType.space));
           }
           iterator.movePrevious();
-
           break;
         }
+
         // MARK: De Bruijn Index
         if (numeric.hasMatch(String.fromCharCode(iterator.current))) {
           var index = 0;
@@ -166,8 +206,6 @@ List<LambdaToken>? _lambdaLexer(String str) {
             index += int.parse(String.fromCharCode(iterator.current));
             if (!iterator.moveNext()) break;
           }
-          // Does not support De Bruijn Index for free variables.
-          if (index >= boundedVarStack.length) return null;
           tokens.add(LambdaToken(LambdaTokenType.variable, index: index));
 
           if (iterator.current >= 0) {
@@ -200,6 +238,8 @@ List<LambdaToken>? _lambdaLexer(String str) {
 Lambda? _lambdaParser(List<LambdaToken> tokens) {
   final lambdaStack = <Lambda>[];
   final opStack = [LambdaTokenType.rbrace];
+  // Names of variables (null indicates either the name is implicit, or if it
+  // shadows an existing name).
   final varStack = <String?>[];
 
   if (tokens.isEmpty) return null;

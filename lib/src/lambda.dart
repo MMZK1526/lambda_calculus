@@ -306,9 +306,9 @@ class Lambda {
         if (cur.name != null) {
           sb.write(cur.name);
         } else if (curDepth > 0) {
-          sb.write('_x$curDepth');
+          sb.write('x$curDepth');
         } else {
-          sb.write('_y${1 - curDepth}');
+          sb.write('y${1 - curDepth}');
         }
         while (lambdaStack.isNotEmpty) {
           if (lambdaStack.last == null) {
@@ -349,9 +349,9 @@ class Lambda {
         if (cur.name != null) {
           sb.write('λ${cur.name}. ');
         } else if (depth > 0) {
-          sb.write('λ_x$depth. ');
+          sb.write('λx$depth. ');
         } else {
-          sb.write('λ_y${1 - depth}');
+          sb.write('λy${1 - depth}');
         }
         lambdaStack.add(null);
         useBraces.add(false);

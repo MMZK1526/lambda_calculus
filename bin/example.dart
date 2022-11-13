@@ -8,12 +8,12 @@ void main(List<String> arguments) {
   // Check out each function for more details.
 
   print('PART I:   UNTYPED LAMBDA CALCULUS\n');
-  _printExamples();
+  // _printExamples();
   _parseLambda();
-  _evaluationsByValue();
-  _fullEvaluations();
-  _evaluationsByName();
-  _factorial();
+  // _evaluationsByValue();
+  // _fullEvaluations();
+  // _evaluationsByName();
+  // _factorial();
   print('');
 
   print('PART II:  TYPED LAMBDA CALCULUS\n');
@@ -51,33 +51,59 @@ void _parseLambda() {
 
   print('Lambda parser: ');
 
-  // The names of the variables are not preserved (everything is converted to
+  // The names of the variables are usually preserved.
+  //// (everything is converted to
   // x1, x2 etc.), but otherwise they are syntactically identical.
   print("1. Print the 'succ' expression:");
   str = 'λa. λb. λc. b (a b c)';
   temp = str.toLambda();
   print('    original: $str');
   print('    parsed:   $temp');
+
   // We can also use slash and backslash to replace the lambda letter.
   print('2. Print the Y-Combinator:');
   str = r'/x. (\y. x (\z. y y z)) (/y. x (/z. y y z))';
   temp = str.toLambda();
   print('    original: $str');
   print('    parsed:   $temp');
+
   print('3. Print an invalid lambda expression:');
   str = 'λx. ';
   temp = str.toLambda();
   print('    original: $str');
   print('    parsed:   $temp');
-  // We can omit the variable after 'λ' if it is not used.
+
+  // We can omit the variable after 'λ' if it is not used. In this case, a name
+  // in the form of x{n} will be generated.
   print('4. Print a lambda expression with an unused variable:');
   str = 'λx. λ. x';
   temp = str.toLambda();
   print('    original: $str');
   print('    parsed:   $temp');
-  // We can also parse lambda expression written in De Bruijn Indices.
+
+  // We can also parse lambda expression written in De Bruijn Indices. Again,
+  // names in the form of x{n} will be generated.
   print('5. Print a lambda expression with De Bruijn Indices:');
   str = 'λ. λ. 1 (1 0)';
+  temp = str.toLambda();
+  print('    original: $str');
+  print('    parsed:   $temp');
+  print('');
+
+  // We can use the shorthand x{n} to represent the variable declared at depth n
+  // in the current scope. Similarly, y{n} can be used to represent anonymous
+  // free variables.
+  print('6. Same as before, but use explicit depth:');
+  str = 'λ. λ. x1 (x1 x2)';
+  temp = str.toLambda();
+  print('    original: $str');
+  print('    parsed:   $temp');
+  print('');
+
+  // Since x{n} (and y{n}) has the special semantics mentioned above, they must
+  // not be used as an explicit variable introduced by a lambda.
+  print('7. Invalid abstraction using x1');
+  str = 'λx1. x1';
   temp = str.toLambda();
   print('    original: $str');
   print('    parsed:   $temp');
