@@ -8,12 +8,15 @@ void main(List<String> arguments) {
   // Check out each function for more details.
 
   print('PART I:   UNTYPED LAMBDA CALCULUS\n');
-  // _printExamples();
+  _printExamples();
   _parseLambda();
-  // _evaluationsByValue();
-  // _fullEvaluations();
-  // _evaluationsByName();
-  // _factorial();
+  _countFreeVars();
+  // Lambda f = r'(\x. \y. x y) y'.toLambda()!;
+  // print(f.eval(evalType: LambdaEvaluationType.fullReduction));
+  _evaluationsByValue();
+  _fullEvaluations();
+  _evaluationsByName();
+  _factorial();
   print('');
 
   print('PART II:  TYPED LAMBDA CALCULUS\n');
@@ -88,7 +91,6 @@ void _parseLambda() {
   temp = str.toLambda();
   print('    original: $str');
   print('    parsed:   $temp');
-  print('');
 
   // We can use the shorthand x{n} to represent the variable declared at depth n
   // in the current scope. Similarly, y{n} can be used to represent anonymous
@@ -98,7 +100,6 @@ void _parseLambda() {
   temp = str.toLambda();
   print('    original: $str');
   print('    parsed:   $temp');
-  print('');
 
   // Since x{n} (and y{n}) has the special semantics mentioned above, they must
   // not be used as an explicit variable introduced by a lambda.
@@ -107,6 +108,14 @@ void _parseLambda() {
   temp = str.toLambda();
   print('    original: $str');
   print('    parsed:   $temp');
+  print('');
+}
+
+void _countFreeVars() {
+  Lambda temp;
+
+  temp = r'(\x. \y. x c) (\a. \b. c a (\d \c. a c d))'.toLambda()!;
+  print(temp.freeCount(countDistinct: true));
   print('');
 }
 
@@ -123,6 +132,7 @@ void _evaluationsByValue() {
     LambdaConstants.lambdaTwo,
     LambdaConstants.lambdaOne,
   ]);
+
   // We use the .eval1() method to evaluate a lambda expression by one step.
   print("1. Evaluate 'test true 2 1' step-by-step: ");
   print('    $temp');
@@ -137,6 +147,7 @@ void _evaluationsByValue() {
     LambdaConstants.lambdaTwo,
     LambdaConstants.lambdaOne,
   ]);
+
   // We use the .eval() method to evaluate a lambda expression fully.
   print("2. Evaluate 'test false 2 1' directly to its simplest form: ");
   print('    $temp\n  = ${temp.eval()}');
@@ -146,6 +157,7 @@ void _evaluationsByValue() {
       [LambdaConstants.lambdaIdentity, LambdaConstants.lambdaFalse],
     ),
   );
+
   // Demonstration of the "call by value" scheme.
   print('3. An application within an abstraction is not reduced: ');
   print('    $temp\n  = ${temp.eval()}');
@@ -153,6 +165,7 @@ void _evaluationsByValue() {
     LambdaConstants.lambdaSucc,
     LambdaConstants.lambdaTwo,
   ]);
+
   // Another example: 'succ 2' results an expression behaviourally equivalent to
   // but syntactically distinct from 3.
   print("4. Evaluate 'succ 2', but the result is not the same as '3': ");

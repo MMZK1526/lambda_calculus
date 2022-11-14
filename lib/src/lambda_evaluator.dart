@@ -1,4 +1,3 @@
-import 'package:dartz/dartz.dart';
 import 'package:lambda_calculus/src/lambda.dart';
 
 enum LambdaEvaluationType {
@@ -15,27 +14,28 @@ enum LambdaEvaluationType {
 extension LambdaEvaluationExtension on Lambda {
   Lambda _shift(int amount, int cutoff) => fmap<int>(
         initialParam: 0,
-        onVar: (lambda, depth) => Lambda(
+        onVar: (lambda, _, depth) => Lambda(
           form: LambdaForm.variable,
-          index: lambda.index! >= cutoff + depth!
+          index: lambda.index! >= cutoff + depth
               ? lambda.index! + amount
               : lambda.index,
+          name: lambda.name,
         ),
-        onAbsEnter: (depth) => depth = depth! + 1,
-        onAbsExit: (depth) => depth = depth! - 1,
+        onAbsEnter: (lamdba, _, depth) => depth = depth + 1,
+        onAbsExit: (lamdba, _, depth) => depth = depth - 1,
       );
 
-  Lambda _substitution(Lambda term) => fmap<Tuple2<int, List<Lambda>>>(
-        initialParam: Tuple2(0, [term]),
-        onVar: (lambda, param) =>
-            param!.value1 == lambda.index ? param.value2.last : lambda,
-        onAbsEnter: (param) {
-          param!.value2.add(param.value2.last._shift(1, 0));
-          return Tuple2(param.value1 + 1, param.value2);
+  Lambda _substitution(Lambda term) => fmap<List<Lambda>>(
+        initialParam: [term],
+        onVar: (lambda, param, depth) =>
+            depth == lambda.index ? param!.last : lambda,
+        onAbsEnter: (_, param, depth) {
+          param!.add(param.last._shift(1, 0));
+          return param;
         },
-        onAbsExit: (param) {
-          param!.value2.removeLast();
-          return Tuple2(param.value1 - 1, param.value2);
+        onAbsExit: (_, param, depth) {
+          param!.removeLast();
+          return param;
         },
       );
 

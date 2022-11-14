@@ -4,16 +4,18 @@ import 'package:lambda_calculus/src/lambda.dart';
 /// Common lambda expressions.
 class LambdaConstants {
   /// The identity expression.
-  static final lambdaIdentity = Lambda.abstract(Lambda.fromIndex(0));
+  static final lambdaIdentity = Lambda.abstract(Lambda.fromVar(name: 'x'), 'x');
 
   /// Church boolean: true.
   static final lambdaTrue = Lambda.abstract(
-    Lambda.abstract(Lambda.fromIndex(1)),
+    Lambda.abstract(Lambda.fromVar(name: 'x'), 'y'),
+    'x',
   );
 
   /// Church boolean: false.
   static final lambdaFalse = Lambda.abstract(
-    Lambda.abstract(Lambda.fromIndex(0)),
+    Lambda.abstract(Lambda.fromVar(name: 'y'), 'y'),
+    'x',
   );
 
   /// The if expression.
@@ -21,17 +23,24 @@ class LambdaConstants {
     Lambda.abstract(
       Lambda.abstract(
         Lambda.applyAll(
-          [Lambda.fromIndex(2), Lambda.fromIndex(1), Lambda.fromIndex(0)],
+          [
+            Lambda.fromVar(name: 'x'),
+            Lambda.fromVar(name: 'y'),
+            Lambda.fromVar(name: 'z'),
+          ],
         ),
+        'z',
       ),
+      'y',
     ),
+    'x',
   );
 
   /// The and expression.
   static final lambdaAnd = Lambda.abstract(
     Lambda.abstract(
       Lambda.applyAll(
-        [Lambda.fromIndex(1), Lambda.fromIndex(0), lambdaFalse],
+        [Lambda.fromVar(index: 1), Lambda.fromVar(index: 0), lambdaFalse],
       ),
     ),
   );
@@ -40,14 +49,14 @@ class LambdaConstants {
   static final lambdaOr = Lambda.abstract(
     Lambda.abstract(
       Lambda.applyAll(
-        [Lambda.fromIndex(1), lambdaTrue, Lambda.fromIndex(0)],
+        [Lambda.fromVar(index: 1), lambdaTrue, Lambda.fromVar(index: 0)],
       ),
     ),
   );
 
   /// The not expression.
   static final lambdaNot = Lambda.abstract(
-    Lambda.applyAll([Lambda.fromIndex(0), lambdaFalse, lambdaTrue]),
+    Lambda.applyAll([Lambda.fromVar(index: 0), lambdaFalse, lambdaTrue]),
   );
 
   /// The church pair.
@@ -55,7 +64,11 @@ class LambdaConstants {
     Lambda.abstract(
       Lambda.abstract(
         Lambda.applyAll(
-          [Lambda.fromIndex(0), Lambda.fromIndex(2), Lambda.fromIndex(1)],
+          [
+            Lambda.fromVar(index: 0),
+            Lambda.fromVar(index: 2),
+            Lambda.fromVar(index: 1),
+          ],
         ),
       ),
     ),
@@ -63,12 +76,12 @@ class LambdaConstants {
 
   /// The fst expression.
   static final lambdaFst = Lambda.abstract(
-    Lambda.applyAll([Lambda.fromIndex(0), LambdaConstants.lambdaTrue]),
+    Lambda.applyAll([Lambda.fromVar(index: 0), LambdaConstants.lambdaTrue]),
   );
 
   /// The snd expression.
   static final lambdaSnd = Lambda.abstract(
-    Lambda.applyAll([Lambda.fromIndex(0), LambdaConstants.lambdaFalse]),
+    Lambda.applyAll([Lambda.fromVar(index: 0), LambdaConstants.lambdaFalse]),
   );
 
   /// The succ (+1) expression.
@@ -80,12 +93,12 @@ class LambdaConstants {
       Lambda.abstract(
         Lambda.abstract(
           Lambda.applyAll([
-            Lambda.fromIndex(3),
-            Lambda.fromIndex(1),
+            Lambda.fromVar(index: 3),
+            Lambda.fromVar(index: 1),
             Lambda.applyAll([
-              Lambda.fromIndex(2),
-              Lambda.fromIndex(1),
-              Lambda.fromIndex(0),
+              Lambda.fromVar(index: 2),
+              Lambda.fromVar(index: 1),
+              Lambda.fromVar(index: 0),
             ]),
           ]),
         ),
@@ -98,8 +111,8 @@ class LambdaConstants {
     Lambda.abstract(
       Lambda.abstract(
         Lambda.applyAll([
-          Lambda.fromIndex(2),
-          Lambda.applyAll([Lambda.fromIndex(1), Lambda.fromIndex(0)]),
+          Lambda.fromVar(index: 2),
+          Lambda.applyAll([Lambda.fromVar(index: 1), Lambda.fromVar(index: 0)]),
         ]),
       ),
     ),
@@ -108,14 +121,14 @@ class LambdaConstants {
   /// The power expression.
   static final lambdaPower = Lambda.abstract(
     Lambda.abstract(
-      Lambda.applyAll([Lambda.fromIndex(0), Lambda.fromIndex(1)]),
+      Lambda.applyAll([Lambda.fromVar(index: 0), Lambda.fromVar(index: 1)]),
     ),
   );
 
   /// The is_zero expression.
   static final lambdaIsZero = Lambda.abstract(
     Lambda.applyAll([
-      Lambda.fromIndex(0),
+      Lambda.fromVar(index: 0),
       Lambda.abstract(lambdaFalse),
       LambdaConstants.lambdaTrue,
     ]),
@@ -154,16 +167,22 @@ class LambdaConstants {
   /// Church number: 10.
   static final lambdaTen = 10.toChurchNumber();
 
+  /// Church number: 11.
+  static final lambdaEleven = 11.toChurchNumber();
+
+  /// Church number: 12.
+  static final lambdaTwelve = 12.toChurchNumber();
+
   /// The diverging omega expression.
   static final omega = Lambda.applyAll([
     Lambda.abstract(
       Lambda.applyAll([
-        Lambda.fromIndex(0),
-        Lambda.fromIndex(0),
+        Lambda.fromVar(index: 0),
+        Lambda.fromVar(index: 0),
       ]),
     ),
     Lambda.abstract(
-      Lambda.applyAll([Lambda.fromIndex(0), Lambda.fromIndex(0)]),
+      Lambda.applyAll([Lambda.fromVar(index: 0), Lambda.fromVar(index: 0)]),
     ),
   ]);
 
@@ -175,16 +194,16 @@ class LambdaConstants {
       exp1: Lambda.abstract(
         Lambda(
           form: LambdaForm.application,
-          exp1: Lambda.fromIndex(1),
+          exp1: Lambda.fromVar(index: 1),
           exp2: Lambda.abstract(
             Lambda(
               form: LambdaForm.application,
               exp1: Lambda(
                 form: LambdaForm.application,
-                exp1: Lambda.fromIndex(1),
-                exp2: Lambda.fromIndex(1),
+                exp1: Lambda.fromVar(index: 1),
+                exp2: Lambda.fromVar(index: 1),
               ),
-              exp2: Lambda.fromIndex(0),
+              exp2: Lambda.fromVar(index: 0),
             ),
           ),
         ),
@@ -192,16 +211,16 @@ class LambdaConstants {
       exp2: Lambda.abstract(
         Lambda(
           form: LambdaForm.application,
-          exp1: Lambda.fromIndex(1),
+          exp1: Lambda.fromVar(index: 1),
           exp2: Lambda.abstract(
             Lambda(
               form: LambdaForm.application,
               exp1: Lambda(
                 form: LambdaForm.application,
-                exp1: Lambda.fromIndex(1),
-                exp2: Lambda.fromIndex(1),
+                exp1: Lambda.fromVar(index: 1),
+                exp2: Lambda.fromVar(index: 1),
               ),
-              exp2: Lambda.fromIndex(0),
+              exp2: Lambda.fromVar(index: 0),
             ),
           ),
         ),

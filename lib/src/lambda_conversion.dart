@@ -14,8 +14,8 @@ extension LambdaConversionIntExtension on int {
     return Lambda.abstract(
       Lambda.abstract(
         Lambda.applyAllReversed([
-          for (var _ in List.generate(n, (_) => null)) Lambda.fromIndex(1),
-          Lambda.fromIndex(0),
+          for (int ix = 0; ix < n; ix++) Lambda.fromVar(index: 1),
+          Lambda.fromVar(index: 0),
         ]),
       ),
     );
@@ -29,11 +29,11 @@ extension LambdaConversionExtension on Lambda {
       Lambda.abstract(
         Lambda(
           form: LambdaForm.application,
-          exp1: Lambda.fromIndex(1),
+          exp1: Lambda.fromVar(index: 1),
           exp2: Lambda.applyAll([
-            Lambda.fromIndex(2),
-            Lambda.fromIndex(1),
-            Lambda.fromIndex(0),
+            Lambda.fromVar(index: 2),
+            Lambda.fromVar(index: 1),
+            Lambda.fromVar(index: 0),
           ]),
         ),
       ),
