@@ -100,7 +100,7 @@ List<LambdaToken>? _lambdaLexer(String str) {
           break;
         }
 
-        // MARK: Depth Variable are not allowed here
+        // MARK: Depth Variables are not allowed here
         if (xnumeric.hasMatch(str.substring(iterator.rawIndex)) ||
             ynumeric.hasMatch(str.substring(iterator.rawIndex))) {
           return null;
@@ -111,10 +111,20 @@ List<LambdaToken>? _lambdaLexer(String str) {
           tempVarBuffer.write(String.fromCharCode(iterator.current));
           if (!iterator.moveNext()) return null;
         }
-        if (String.fromCharCode(iterator.current) == '.' &&
-            !iterator.moveNext()) {
-          return null;
+
+        // MARK: Ignore Space
+        while (blank.hasMatch(String.fromCharCode(iterator.current))) {
+          if (!iterator.moveNext()) return null;
         }
+        if (String.fromCharCode(iterator.current) == '.') {
+          if (!iterator.moveNext()) return null;
+        }
+        if (String.fromCharCode(iterator.current) == '-') {
+          if (!iterator.moveNext()) return null;
+          if (String.fromCharCode(iterator.current) != '>') return null;
+          if (!iterator.moveNext()) return null;
+        }
+
         iterator.movePrevious();
 
         final tempVar = tempVarBuffer.toString();

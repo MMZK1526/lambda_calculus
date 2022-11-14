@@ -58,14 +58,15 @@ void _parseLambda() {
   //// (everything is converted to
   // x1, x2 etc.), but otherwise they are syntactically identical.
   print("1. Print the 'succ' expression:");
-  str = 'λa. λb. λc. b (a b c)';
+  str = 'λa. λb . λc. b (a b c)';
   temp = str.toLambda();
   print('    original: $str');
   print('    parsed:   $temp');
 
-  // We can also use slash and backslash to replace the lambda letter.
+  // We can also use slash and backslash to replace the lambda letter, as well
+  // as "->" to replace the ".".
   print('2. Print the Y-Combinator:');
-  str = r'/x. (\y. x (\z. y y z)) (/y. x (/z. y y z))';
+  str = r'/x. (\y -> x (\z. y y z)) (/y. x (/z. y y z))';
   temp = str.toLambda();
   print('    original: $str');
   print('    parsed:   $temp');
