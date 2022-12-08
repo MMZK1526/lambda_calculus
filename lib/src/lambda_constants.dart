@@ -4,17 +4,17 @@ import 'package:lambda_calculus/src/lambda.dart';
 /// Common lambda expressions.
 class LambdaConstants {
   /// The identity expression.
-  static final lambdaIdentity = Lambda.abstract(Lambda.fromVar(name: 'x'), 'x');
+  static final lambdaIdentity = Lambda.abstract(Lambda.fromVar(index: 0), 'x');
 
   /// Church boolean: true.
   static final lambdaTrue = Lambda.abstract(
-    Lambda.abstract(Lambda.fromVar(name: 'x'), 'y'),
+    Lambda.abstract(Lambda.fromVar(index: 1), 'y'),
     'x',
   );
 
   /// Church boolean: false.
   static final lambdaFalse = Lambda.abstract(
-    Lambda.abstract(Lambda.fromVar(name: 'y'), 'y'),
+    Lambda.abstract(Lambda.fromVar(index: 0), 'y'),
     'x',
   );
 
@@ -42,7 +42,9 @@ class LambdaConstants {
       Lambda.applyAll(
         [Lambda.fromVar(index: 1), Lambda.fromVar(index: 0), lambdaFalse],
       ),
+      'y',
     ),
+    'x',
   );
 
   /// The or expression.

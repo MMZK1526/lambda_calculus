@@ -209,6 +209,15 @@ class Lambda {
             lambdaStack.last.index = freeVars.length + boundedVars.length;
             freeVars.add(lambdaStack.last.name!);
           }
+        } else if (lambdaStack.last.name == null) {
+          var index = lambdaStack.last.index!;
+
+          if (index < boundedVars.length) {
+            // Bounded variable.
+            lambdaStack.last.name = boundedVars[index];
+          } else if (index - boundedVars.length < freeVars.length) {
+            lambdaStack.last.name = freeVars[index - boundedVars.length];
+          }
         }
 
         resultStack.last = onVar(lambdaStack.last, param, boundedVars.length);
