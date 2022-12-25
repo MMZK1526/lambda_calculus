@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:lambda_calculus/src/lambda_evaluator.dart';
 import 'package:lambda_calculus/src/lambda.dart';
 
@@ -6,18 +8,17 @@ extension LambdaConversionIntExtension on int {
   ///
   /// Negative numbers treat as zero.
   Lambda toChurchNumber() {
-    var n = this;
-    if (this < 0) {
-      n = 0;
-    }
+    var n = max(this, 0);
 
     return Lambda.abstract(
       Lambda.abstract(
         Lambda.applyAllReversed([
-          for (int ix = 0; ix < n; ix++) Lambda.fromVar(index: 1),
-          Lambda.fromVar(index: 0),
+          for (int ix = 0; ix < n; ix++) Lambda.fromVar(name: 'x'),
+          Lambda.fromVar(name: 'y'),
         ]),
+        'y',
       ),
+      'x',
     );
   }
 }
@@ -29,15 +30,18 @@ extension LambdaConversionExtension on Lambda {
       Lambda.abstract(
         Lambda(
           form: LambdaForm.application,
-          exp1: Lambda.fromVar(index: 1),
+          exp1: Lambda.fromVar(name: 'y'),
           exp2: Lambda.applyAll([
-            Lambda.fromVar(index: 2),
-            Lambda.fromVar(index: 1),
-            Lambda.fromVar(index: 0),
+            Lambda.fromVar(name: 'x'),
+            Lambda.fromVar(name: 'y'),
+            Lambda.fromVar(name: 'z'),
           ]),
         ),
+        'z',
       ),
+      'y',
     ),
+    'x',
   );
 
   /// Convert the lambda expression that is a church number to a natural number.

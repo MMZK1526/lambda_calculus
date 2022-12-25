@@ -40,7 +40,7 @@ class LambdaConstants {
   static final lambdaAnd = Lambda.abstract(
     Lambda.abstract(
       Lambda.applyAll(
-        [Lambda.fromVar(index: 1), Lambda.fromVar(index: 0), lambdaFalse],
+        [Lambda.fromVar(name: 'x'), Lambda.fromVar(name: 'y'), lambdaFalse],
       ),
       'y',
     ),
@@ -51,14 +51,17 @@ class LambdaConstants {
   static final lambdaOr = Lambda.abstract(
     Lambda.abstract(
       Lambda.applyAll(
-        [Lambda.fromVar(index: 1), lambdaTrue, Lambda.fromVar(index: 0)],
+        [Lambda.fromVar(name: 'x'), lambdaTrue, Lambda.fromVar(name: 'y')],
       ),
+      'y',
     ),
+    'x',
   );
 
   /// The not expression.
   static final lambdaNot = Lambda.abstract(
-    Lambda.applyAll([Lambda.fromVar(index: 0), lambdaFalse, lambdaTrue]),
+    Lambda.applyAll([Lambda.fromVar(name: 'x'), lambdaFalse, lambdaTrue]),
+    'x',
   );
 
   /// The church pair.
@@ -67,48 +70,57 @@ class LambdaConstants {
       Lambda.abstract(
         Lambda.applyAll(
           [
-            Lambda.fromVar(index: 0),
-            Lambda.fromVar(index: 2),
-            Lambda.fromVar(index: 1),
+            Lambda.fromVar(name: 'z'),
+            Lambda.fromVar(name: 'x'),
+            Lambda.fromVar(name: 'y'),
           ],
         ),
+        'z',
       ),
+      'y',
     ),
+    'x',
   );
 
   /// The fst expression.
   static final lambdaFst = Lambda.abstract(
-    Lambda.applyAll([Lambda.fromVar(index: 0), LambdaConstants.lambdaTrue]),
+    Lambda.applyAll([Lambda.fromVar(name: 'x'), LambdaConstants.lambdaTrue]),
+    'x',
   );
 
   /// The snd expression.
   static final lambdaSnd = Lambda.abstract(
-    Lambda.applyAll([Lambda.fromVar(index: 0), LambdaConstants.lambdaFalse]),
+    Lambda.applyAll([Lambda.fromVar(name: 'x'), LambdaConstants.lambdaFalse]),
+    'x',
   );
 
   /// The succ (+1) expression.
   static final lambdaSucc = LambdaConversionExtension.lambdaSucc;
 
-  /// The plus expression.
+  /// The addition expression.
   static final lambdaPlus = Lambda.abstract(
     Lambda.abstract(
       Lambda.abstract(
         Lambda.abstract(
           Lambda.applyAll([
-            Lambda.fromVar(index: 3),
-            Lambda.fromVar(index: 1),
+            Lambda.fromVar(name: 'x'),
+            Lambda.fromVar(name: 'z'),
             Lambda.applyAll([
-              Lambda.fromVar(index: 2),
-              Lambda.fromVar(index: 1),
-              Lambda.fromVar(index: 0),
+              Lambda.fromVar(name: 'y'),
+              Lambda.fromVar(name: 'z'),
+              Lambda.fromVar(name: 'u'),
             ]),
           ]),
+          'u',
         ),
+        'z',
       ),
+      'y',
     ),
+    'x',
   );
 
-  /// The times expression.
+  /// The multiplication expression.
   static final lambdaTimes = Lambda.abstract(
     Lambda.abstract(
       Lambda.abstract(

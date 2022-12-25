@@ -8,22 +8,22 @@ void main(List<String> arguments) {
   // Check out each function for more details.
 
   print('PART I:   UNTYPED LAMBDA CALCULUS\n');
-  // _printExamples();
+  _printExamples();
   _parseLambda();
-  // _countFreeVars();
+  _countFreeVars();
   // Lambda f = r'(\x. \y. x y) y'.toLambda()!;
   // print(f.eval(evalType: LambdaEvaluationType.fullReduction));
-  // _evaluationsByValue();
-  // _fullEvaluations();
-  // _evaluationsByName();
-  // _factorial();
+  _evaluationsByValue();
+  _fullEvaluations();
+  _evaluationsByName();
+  _factorial();
   print('');
 
   print('PART II:  TYPED LAMBDA CALCULUS\n');
   // TODO: Come up with more examples
 
-  // final l = r"\f. \g. \x. f (g x)".toLambda()!;
-  // print("The type for $l is ${l.findType()}");
+  final l = r"\f. \g. \x. f (g x)".toLambda()!;
+  print("The type for $l is ${l.findType()}");
 }
 
 void _printExamples() {
@@ -111,6 +111,15 @@ void _parseLambda() {
   temp = str.toLambda();
   print('    original: $str');
   print('    parsed:   $temp');
+  print('');
+
+  // If the same variable name has been defined more than once, each usage is
+  // bounded to the closest definition.
+  print('7. λx. λx. x is the same as λx. λy. y');
+  str = 'λx. λx. x';
+  temp = str.toLambda();
+  print('    original:             $str');
+  print('    parsed without names: ${temp!.toStringNameless()}');
   print('');
 }
 
