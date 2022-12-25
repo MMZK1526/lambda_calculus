@@ -51,8 +51,8 @@ List<LambdaToken>? _lambdaLexer(String str) {
   final alpha = RegExp(r'^[a-zA-Z]+$');
   final numeric = RegExp(r'^[0-9]+$');
   final alphanumeric = RegExp(r'^[a-zA-Z0-9]+$');
-  final xnumeric = RegExp(r'^x[0-9]+([^a-zA-Z0-9]+|$)');
-  final ynumeric = RegExp(r'^y[0-9]+([^a-zA-Z0-9]+|$)');
+  final xnumeric = RegExp(r'^_x[0-9]+([^a-zA-Z0-9]+|$)');
+  final ynumeric = RegExp(r'^_y[0-9]+([^a-zA-Z0-9]+|$)');
   final blank = RegExp(r'^[\r\n\t\v ]+$');
 
   while (iterator.moveNext()) {
@@ -87,6 +87,28 @@ List<LambdaToken>? _lambdaLexer(String str) {
         // Determine the name of the variable.
         final tempVarBuffer = StringBuffer();
 
+        // MARK: Depth Variables are not allowed here unless the depth is
+        // correct
+        if (ynumeric.hasMatch(str.substring(iterator.rawIndex))) {
+          return null;
+        }
+        if (xnumeric.hasMatch(str.substring(iterator.rawIndex))) {
+          iterator.moveNext();
+          iterator.moveNext();
+          var index = 0;
+          while (numeric.hasMatch(String.fromCharCode(iterator.current))) {
+            index *= 10;
+            index += int.parse(String.fromCharCode(iterator.current));
+            if (!iterator.moveNext()) break;
+          }
+          if (index == boundedVars.length + 1) {
+            tokens.add(LambdaToken(LambdaTokenType.lambda));
+            boundedVars.insert(0, '');
+            break;
+          }
+          return null;
+        }
+
         // MARK: Anonymous Variable
         if (String.fromCharCode(iterator.current) == '.') {
           tokens.add(LambdaToken(LambdaTokenType.lambda));
@@ -98,12 +120,6 @@ List<LambdaToken>? _lambdaLexer(String str) {
           boundedVars.insert(0, '');
           iterator.movePrevious();
           break;
-        }
-
-        // MARK: Depth Variables are not allowed here
-        if (xnumeric.hasMatch(str.substring(iterator.rawIndex)) ||
-            ynumeric.hasMatch(str.substring(iterator.rawIndex))) {
-          return null;
         }
 
         // MARK: Explicit Variable
@@ -138,6 +154,7 @@ List<LambdaToken>? _lambdaLexer(String str) {
         // MARK: Depth Variable
         if (xnumeric.hasMatch(str.substring(iterator.rawIndex)) ||
             ynumeric.hasMatch(str.substring(iterator.rawIndex))) {
+          iterator.moveNext();
           final isFree = String.fromCharCode(iterator.current) == 'y';
           iterator.moveNext();
           var index = 0;

@@ -321,19 +321,92 @@ class Lambda {
               },
       );
 
+  /// A string representation of the [Lambda] without redundant brackets and
+  /// ignores custom names (so that all variables are in the form of x{n} or
+  /// y{n}).
+  ///
+  /// Avoids recursion.
+  String toStringNameless() {
+    if (form == LambdaForm.dummy) return '[DUMMY]';
+
+    final sb = StringBuffer();
+    bool? isLeftParen = true;
+    fmap<List<bool>>(
+      initialParam: [false],
+      onVar: (lambda, _, depth) {
+        final curDepth = depth - lambda.index!;
+        if (isLeftParen != true) {
+          sb.write(' ');
+        }
+        if (curDepth > 0) {
+          sb.write('_x$curDepth');
+        } else {
+          sb.write('_y${1 - curDepth}');
+        }
+        isLeftParen = null;
+        return lambda;
+      },
+      onAbsEnter: (lambda, useBraces, depth) {
+        if ((isLeftParen != true && useBraces!.last) ||
+            (isLeftParen == false && !useBraces!.last)) {
+          sb.write(' ');
+        }
+        if (useBraces!.last) {
+          sb.write('(');
+          isLeftParen = true;
+        }
+        if (depth > 0) {
+          sb.write('λ_x$depth.');
+        } else {
+          sb.write('λ_y${1 - depth}.');
+        }
+        useBraces.add(false);
+        isLeftParen = false;
+        return useBraces;
+      },
+      onAbsExit: (lambda, useBraces, depth) {
+        useBraces!.removeLast();
+        if (useBraces.last) {
+          sb.write(')');
+          isLeftParen = false;
+        }
+        return useBraces;
+      },
+      onAppEnter: (lambda, useBraces, depth) {
+        if (useBraces!.last) {
+          sb.write('(');
+          isLeftParen = true;
+        }
+        useBraces.add(lambda.form == LambdaForm.abstraction);
+        return useBraces;
+      },
+      onAppExit: (lambda, useBraces, depth) {
+        useBraces!.removeLast();
+        if (useBraces.last) {
+          sb.write(')');
+          isLeftParen = false;
+        }
+        return useBraces;
+      },
+    );
+
+    return sb.toString();
+  }
+
   @override
   int get hashCode => toString().hashCode;
 
   /// The equality operator.
   ///
-  /// Returns true iff the two [Lambda]s are syntactically identical.
+  /// Returns true iff the two [Lambda]s are syntactically identical up to alpha
+  /// renaming.
   ///
   /// Avoids recursion.
   @override
   bool operator ==(Object other) {
     if (other.runtimeType != Lambda) return false;
 
-    return toString() == other.toString();
+    return toStringNameless() == (other as Lambda).toStringNameless();
   }
 
   /// A string representation of the [Lambda] without redundant brackets.
@@ -355,9 +428,9 @@ class Lambda {
         if (lambda.name != null) {
           sb.write(lambda.name);
         } else if (curDepth > 0) {
-          sb.write('x$curDepth');
+          sb.write('_x$curDepth');
         } else {
-          sb.write('y${1 - curDepth}');
+          sb.write('_y${1 - curDepth}');
         }
         isLeftParen = null;
         return lambda;
@@ -374,9 +447,9 @@ class Lambda {
         if (lambda.name != null) {
           sb.write('λ${lambda.name}.');
         } else if (depth > 0) {
-          sb.write('λx$depth.');
+          sb.write('λ_x$depth.');
         } else {
-          sb.write('λy${1 - depth}.');
+          sb.write('λ_y${1 - depth}.');
         }
         useBraces.add(false);
         isLeftParen = false;

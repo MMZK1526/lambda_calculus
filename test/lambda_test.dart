@@ -27,13 +27,20 @@ void main() {
       expect(LambdaConstants.yCombinator, LambdaConstants.yCombinator.clone());
     },
   );
+
   test('Parse Test', () {
     expect(
       r'\x1(λx2. x1 (λx3. x2 x2 x3)) (λx2. x1 (λ x2 x2 0))'.toLambda(),
       LambdaConstants.yCombinator,
     );
+    expect(
+      r'\_x1 _x1'.toLambda(),
+      LambdaConstants.lambdaIdentity,
+    );
+    expect(r'\_x2 _x1'.toLambda(), null);
     expect(r'((x1 (\x2 x2))'.toLambda(), null);
   });
+
   test(
     'Evaluation Test',
     () {
