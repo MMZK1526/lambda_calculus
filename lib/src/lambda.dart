@@ -101,7 +101,7 @@ class Lambda {
       );
     }
 
-    return _applyAllReversed(lambdas);
+    return _applyAllReversed(List.of(lambdas));
   }
 
   /// A higher-order function that iterates on the [Lambda], returning a value.
@@ -183,8 +183,8 @@ class Lambda {
     T? initialParam,
     T? Function(Lambda, T? param, int depth)? onAbsEnter,
     T? Function(Lambda, T? param, int depth)? onAbsExit,
-    T? Function(Lambda, T? param, int depth)? onAppEnter,
-    T? Function(Lambda, T? param, int depth)? onAppExit,
+    T? Function(Lambda, T? param, int depth, bool isLeft)? onAppEnter,
+    T? Function(Lambda, T? param, int depth, bool isLeft)? onAppExit,
   }) {
     final lambdaStack = [this];
     final resultStack = <Lambda>[Lambda(form: LambdaForm.dummy)];
@@ -234,20 +234,33 @@ class Lambda {
             resultStack.last.exp1 = tempLambda;
 
             isExp1Stack.last = false;
-            param = onAppExit?.call(cur, param, boundedVars.length) ?? param;
+            param = onAppExit?.call(
+                  cur,
+                  param,
+                  boundedVars.length,
+                  true,
+                ) ??
+                param;
             lambdaStack.add(lambdaStack.last.exp2!);
             resultStack.add(Lambda(form: LambdaForm.dummy));
             param = onAppEnter?.call(
                   lambdaStack.last,
                   param,
                   boundedVars.length,
+                  false,
                 ) ??
                 param;
             break;
           } else {
             resultStack.last.exp2 = tempLambda;
             isExp1Stack.removeLast();
-            param = onAppExit?.call(cur, param, boundedVars.length) ?? param;
+            param = onAppExit?.call(
+                  cur,
+                  param,
+                  boundedVars.length,
+                  false,
+                ) ??
+                param;
           }
         }
       } else if (lambdaStack.last.form == LambdaForm.abstraction) {
@@ -272,6 +285,7 @@ class Lambda {
               lambdaStack.last,
               param,
               boundedVars.length,
+              true,
             ) ??
             param;
       }
@@ -372,17 +386,20 @@ class Lambda {
         }
         return useBraces;
       },
-      onAppEnter: (lambda, useBraces, depth) {
-        if (useBraces!.last) {
+      onAppEnter: (lambda, useBraces, depth, isLeft) {
+        if (useBraces!.last ||
+            !isLeft && lambda.form == LambdaForm.application) {
+          if (isLeftParen != true) sb.write(' ');
           sb.write('(');
           isLeftParen = true;
         }
         useBraces.add(lambda.form == LambdaForm.abstraction);
         return useBraces;
       },
-      onAppExit: (lambda, useBraces, depth) {
+      onAppExit: (lambda, useBraces, depth, isLeft) {
         useBraces!.removeLast();
-        if (useBraces.last) {
+        if (useBraces.last ||
+            !isLeft && lambda.form == LambdaForm.application) {
           sb.write(')');
           isLeftParen = false;
         }
@@ -463,17 +480,20 @@ class Lambda {
         }
         return useBraces;
       },
-      onAppEnter: (lambda, useBraces, depth) {
-        if (useBraces!.last) {
+      onAppEnter: (lambda, useBraces, depth, isLeft) {
+        if (useBraces!.last ||
+            !isLeft && lambda.form == LambdaForm.application) {
+          if (isLeftParen != true) sb.write(' ');
           sb.write('(');
           isLeftParen = true;
         }
         useBraces.add(lambda.form == LambdaForm.abstraction);
         return useBraces;
       },
-      onAppExit: (lambda, useBraces, depth) {
+      onAppExit: (lambda, useBraces, depth, isLeft) {
         useBraces!.removeLast();
-        if (useBraces.last) {
+        if (useBraces.last ||
+            !isLeft && lambda.form == LambdaForm.application) {
           sb.write(')');
           isLeftParen = false;
         }

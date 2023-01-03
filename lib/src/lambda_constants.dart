@@ -125,27 +125,36 @@ class LambdaConstants {
     Lambda.abstract(
       Lambda.abstract(
         Lambda.applyAll([
-          Lambda.fromVar(index: 2),
-          Lambda.applyAll([Lambda.fromVar(index: 1), Lambda.fromVar(index: 0)]),
+          Lambda.fromVar(name: 'x'),
+          Lambda.applyAll([
+            Lambda.fromVar(name: 'y'),
+            Lambda.fromVar(name: 'z'),
+          ]),
         ]),
+        'z',
       ),
+      'y',
     ),
+    'x',
   );
 
   /// The power expression.
   static final lambdaPower = Lambda.abstract(
     Lambda.abstract(
-      Lambda.applyAll([Lambda.fromVar(index: 0), Lambda.fromVar(index: 1)]),
+      Lambda.applyAll([Lambda.fromVar(name: 'x'), Lambda.fromVar(name: 'y')]),
+      'y',
     ),
+    'x',
   );
 
   /// The is_zero expression.
   static final lambdaIsZero = Lambda.abstract(
     Lambda.applyAll([
-      Lambda.fromVar(index: 0),
+      Lambda.fromVar(name: 'x'),
       Lambda.abstract(lambdaFalse),
       LambdaConstants.lambdaTrue,
     ]),
+    'x',
   );
 
   /// Church number: 0.
@@ -190,13 +199,12 @@ class LambdaConstants {
   /// The diverging omega expression.
   static final omega = Lambda.applyAll([
     Lambda.abstract(
-      Lambda.applyAll([
-        Lambda.fromVar(index: 0),
-        Lambda.fromVar(index: 0),
-      ]),
+      Lambda.applyAll([Lambda.fromVar(name: 'w'), Lambda.fromVar(name: 'w')]),
+      'w',
     ),
     Lambda.abstract(
-      Lambda.applyAll([Lambda.fromVar(index: 0), Lambda.fromVar(index: 0)]),
+      Lambda.applyAll([Lambda.fromVar(name: 'w'), Lambda.fromVar(name: 'w')]),
+      'w',
     ),
   ]);
 
@@ -208,37 +216,42 @@ class LambdaConstants {
       exp1: Lambda.abstract(
         Lambda(
           form: LambdaForm.application,
-          exp1: Lambda.fromVar(index: 1),
+          exp1: Lambda.fromVar(name: 'f'),
           exp2: Lambda.abstract(
             Lambda(
               form: LambdaForm.application,
               exp1: Lambda(
                 form: LambdaForm.application,
-                exp1: Lambda.fromVar(index: 1),
-                exp2: Lambda.fromVar(index: 1),
+                exp1: Lambda.fromVar(name: 'x'),
+                exp2: Lambda.fromVar(name: 'x'),
               ),
-              exp2: Lambda.fromVar(index: 0),
+              exp2: Lambda.fromVar(name: 'y'),
             ),
+            'y',
           ),
         ),
+        'x',
       ),
       exp2: Lambda.abstract(
         Lambda(
           form: LambdaForm.application,
-          exp1: Lambda.fromVar(index: 1),
+          exp1: Lambda.fromVar(name: 'f'),
           exp2: Lambda.abstract(
             Lambda(
               form: LambdaForm.application,
               exp1: Lambda(
                 form: LambdaForm.application,
-                exp1: Lambda.fromVar(index: 1),
-                exp2: Lambda.fromVar(index: 1),
+                exp1: Lambda.fromVar(name: 'x'),
+                exp2: Lambda.fromVar(name: 'x'),
               ),
-              exp2: Lambda.fromVar(index: 0),
+              exp2: Lambda.fromVar(name: 'y'),
             ),
+            'y',
           ),
         ),
+        'x',
       ),
     ),
+    'f',
   );
 }
