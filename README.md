@@ -6,4 +6,6 @@ At first I wanted to program it with a functional language such as `Haskell`, bu
 
 Currently, it supports untyped Lambda Calculus as well as type construction. Next I will introduce syntactic `fix` and `let` notations.
 
-See [here](bin/example.dart) for examples.
+See [here](example/example.dart) for examples.
+
+TODO: Documentation
