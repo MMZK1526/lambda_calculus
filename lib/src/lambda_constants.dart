@@ -142,9 +142,9 @@ class LambdaConstants {
   static final lambdaPower = Lambda.abstract(
     Lambda.abstract(
       Lambda.applyAll([Lambda.fromVar(name: 'x'), Lambda.fromVar(name: 'y')]),
-      'y',
+      'x',
     ),
-    'x',
+    'y',
   );
 
   /// The is_zero expression.
