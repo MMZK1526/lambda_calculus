@@ -88,7 +88,7 @@ class Lambda {
       );
     }
 
-    Lambda _applyAllReversed(List<Lambda> lambdas) {
+    Lambda applyAllReversedHelper(List<Lambda> lambdas) {
       if (lambdas.length == 1) {
         return lambdas.first;
       }
@@ -101,7 +101,7 @@ class Lambda {
       );
     }
 
-    return _applyAllReversed(List.of(lambdas));
+    return applyAllReversedHelper(List.of(lambdas));
   }
 
   /// A higher-order function that iterates on the [Lambda], returning a value.
