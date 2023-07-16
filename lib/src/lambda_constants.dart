@@ -196,6 +196,9 @@ class LambdaConstants {
   /// Church number: 12.
   static final lambdaTwelve = 12.toChurchNumber();
 
+  /// The good era is approaching!
+  static final iiyoKoiyo = 114514.toChurchNumber();
+
   /// The diverging omega expression.
   static final omega = Lambda.applyAll([
     Lambda.abstract(

@@ -64,8 +64,11 @@ extension LamdbaTypeExtension on Lambda {
           return MapEntry({}, useContext(context, curVar.sublist(depth + 1)));
         case LambdaForm.abstraction:
           final curType = useContext(context, curVar);
-          final redex =
-              work(context, term.exp1!, List.of(curVar)..insert(0, []));
+          final redex = work(
+            context,
+            term.exp1!,
+            List.of(curVar)..insert(0, []),
+          );
           if (redex != null) {
             return MapEntry(
               redex.key,

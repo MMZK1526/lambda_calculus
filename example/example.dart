@@ -24,6 +24,8 @@ void main(List<String> arguments) {
 
   final l = r"\f. \g. \x. f (g x)".toLambda()!;
   print("The type for $l is ${l.findType()}");
+
+  print(r'\x \y. x y'.toLambda()!.findType());
 }
 
 void _printExamples() {
