@@ -8,8 +8,8 @@ import 'package:lambda_calculus/src/lambda_form.dart';
 extension LambdaConversionIntExtension on int {
   /// Convert a natural number to church number.
   ///
-  /// Negative numbers treat as zero.
-  Lambda toChurchNumber() {
+  /// Negative numbers treated as zero.
+  LambdaBuilder toChurchNumber() {
     var n = max(this, 0);
 
     return LambdaBuilder.abstract(
@@ -21,7 +21,7 @@ extension LambdaConversionIntExtension on int {
         'y',
       ),
       'x',
-    ).build();
+    );
   }
 }
 

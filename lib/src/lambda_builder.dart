@@ -1,3 +1,4 @@
+import 'package:lambda_calculus/src/lambda_constants.dart';
 import 'package:lambda_calculus/src/lambda_form.dart';
 import 'package:lambda_calculus/src/lambda_interface.dart';
 import 'package:lambda_calculus/src/lambda.dart';
@@ -36,6 +37,8 @@ class LambdaBuilder implements ILambda<LambdaBuilder> {
 
   @override
   LambdaBuilder? exp2;
+
+  static final LambdaBuilderConstants constants = LambdaBuilderConstants();
 
   static LambdaBuilder _fromILambda(ILambda lambda) {
     if (lambda.runtimeType == LambdaBuilder) {

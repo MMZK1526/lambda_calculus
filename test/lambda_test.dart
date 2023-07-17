@@ -11,25 +11,25 @@ void main() {
     'Clone Test',
     () {
       expect(
-        identityHashCode(LambdaConstants.lambdaTrue.build()),
-        isNot(identityHashCode(LambdaConstants.lambdaTrue.build().clone())),
+        identityHashCode(Lambda.constants.lambdaTrue()),
+        isNot(identityHashCode(Lambda.constants.lambdaTrue().clone())),
       );
       expect(
-        LambdaConstants.lambdaTrue.build(),
-        LambdaConstants.lambdaTrue.build().clone(),
+        Lambda.constants.lambdaTrue(),
+        Lambda.constants.lambdaTrue().clone(),
       );
       expect(
-        identityHashCode(LambdaConstants.lambdaSeven),
-        isNot(identityHashCode(LambdaConstants.lambdaSeven.clone())),
+        identityHashCode(Lambda.constants.seven()),
+        isNot(identityHashCode(Lambda.constants.seven().clone())),
       );
-      expect(LambdaConstants.lambdaSeven, LambdaConstants.lambdaSeven.clone());
+      expect(Lambda.constants.seven(), Lambda.constants.seven().clone());
       expect(
-        identityHashCode(LambdaConstants.yCombinator.build()),
-        isNot(identityHashCode(LambdaConstants.yCombinator.build().clone())),
+        identityHashCode(Lambda.constants.yCombinator()),
+        isNot(identityHashCode(Lambda.constants.yCombinator().clone())),
       );
       expect(
-        LambdaConstants.yCombinator.build(),
-        LambdaConstants.yCombinator.build().clone(),
+        Lambda.constants.yCombinator(),
+        Lambda.constants.yCombinator().clone(),
       );
     },
   );
@@ -37,11 +37,11 @@ void main() {
   test('Parse Test', () {
     expect(
       r'\x1(λx2. x1 (λx3. x2 x2 x3)) (λx2. x1 (λ x2 x2 0))'.toLambda(),
-      LambdaConstants.yCombinator.build(),
+      Lambda.constants.yCombinator(),
     );
     expect(
       r'\_x1 _x1'.toLambda(),
-      LambdaConstants.lambdaIdentity.build(),
+      Lambda.constants.identity(),
     );
     expect(r'\_x2 _x1'.toLambda(), null);
     expect(r'((x1 (\x2 x2))'.toLambda(), null);
@@ -52,69 +52,69 @@ void main() {
     () {
       expect(
         LambdaBuilder.applyAll([
-          LambdaConstants.lambdaTest,
-          LambdaConstants.lambdaFalse,
-          LambdaConstants.lambdaTwo,
-          LambdaConstants.lambdaOne,
+          Lambda.constants.test(),
+          Lambda.constants.lambdaFalse(),
+          Lambda.constants.two(),
+          Lambda.constants.one(),
         ]).build().eval(),
-        LambdaConstants.lambdaOne,
+        Lambda.constants.one(),
       );
       expect(
-        LambdaConstants.yCombinator.build().eval(),
-        LambdaConstants.yCombinator.build(),
+        Lambda.constants.yCombinator().eval(),
+        Lambda.constants.yCombinator(),
       );
       expect(
         LambdaBuilder.applyAll([
-          LambdaConstants.lambdaSucc,
-          LambdaConstants.lambdaSix,
+          Lambda.constants.succ(),
+          Lambda.constants.six(),
         ]).build().toInt(),
         7,
       );
       expect(
         LambdaBuilder.applyAll([
-          LambdaConstants.lambdaPlus,
-          LambdaConstants.lambdaTwo,
-          LambdaConstants.lambdaThree,
+          Lambda.constants.plus(),
+          Lambda.constants.two(),
+          Lambda.constants.three(),
         ]).build().toInt(),
         5,
       );
       expect(
         LambdaBuilder.applyAll([
-          LambdaConstants.lambdaTimes,
-          LambdaConstants.lambdaTwo,
-          LambdaConstants.lambdaThree,
+          Lambda.constants.times(),
+          Lambda.constants.two(),
+          Lambda.constants.three(),
         ]).build().toInt(),
         6,
       );
       expect(
         LambdaBuilder.applyAll([
-          LambdaConstants.lambdaPower,
-          LambdaConstants.lambdaTwo,
-          LambdaConstants.lambdaThree,
+          Lambda.constants.power(),
+          Lambda.constants.two(),
+          Lambda.constants.three(),
         ]).build().toInt(),
         8,
       );
       expect(
         LambdaBuilder.applyAll([
-          LambdaConstants.lambdaIsZero,
-          LambdaConstants.lambdaTwo,
+          Lambda.constants.isZero(),
+          Lambda.constants.two(),
         ]).build().eval(),
-        LambdaConstants.lambdaFalse.build(),
+        Lambda.constants.lambdaFalse(),
       );
       expect(
         LambdaBuilder.applyAll([
-          LambdaConstants.lambdaIsZero,
-          LambdaConstants.lambdaZero,
+          Lambda.constants.isZero(),
+          Lambda.constants.zero(),
         ]).build().eval(),
-        LambdaConstants.lambdaTrue.build(),
+        Lambda.constants.lambdaTrue(),
       );
       expect(
         LambdaBuilder.applyAll([
-          LambdaConstants.lambdaAnd,
-          LambdaConstants.lambdaFalse,
-          LambdaConstants.omega,
+          Lambda.constants.and(),
+          Lambda.constants.lambdaFalse(),
+          Lambda.constants.omega(),
         ]).build().eval(evalType: LambdaEvaluationType.callByName),
-        LambdaConstants.lambdaFalse.build(),
+        Lambda.constants.lambdaFalse(),
       );
     },
   );

@@ -1,5 +1,4 @@
 export 'package:lambda_calculus/src/lambda_builder.dart';
-export 'package:lambda_calculus/src/lambda_constants.dart';
 export 'package:lambda_calculus/src/lambda_conversion.dart';
 export 'package:lambda_calculus/src/lambda_form.dart';
 export 'package:lambda_calculus/src/lambda_evaluator.dart';

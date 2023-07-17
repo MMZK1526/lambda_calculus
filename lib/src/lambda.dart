@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:lambda_calculus/src/lambda_constants.dart';
 import 'package:lambda_calculus/src/lambda_form.dart';
 import 'package:lambda_calculus/src/lambda_interface.dart';
 
@@ -34,6 +35,8 @@ class Lambda implements ILambda<Lambda> {
 
   @override
   Lambda? exp2;
+
+  static final LambdaConstants constants = LambdaConstants();
 
   /// A higher-order function that iterates on the [Lambda], returning a value.
   R fold<R, T>({

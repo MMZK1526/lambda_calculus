@@ -1,291 +1,418 @@
+import 'package:lambda_calculus/src/lambda.dart';
 import 'package:lambda_calculus/src/lambda_builder.dart';
 import 'package:lambda_calculus/src/lambda_conversion.dart';
 import 'package:lambda_calculus/src/lambda_form.dart';
+import 'package:lambda_calculus/src/lambda_interface.dart';
 
 /// Common lambda expressions.
-class LambdaConstants {
-  /// The identity expression.
-  static final lambdaIdentity = LambdaBuilder.abstract(
-    LambdaBuilder.fromVar(index: 0),
-    'x',
-  );
+class LambdaBuilderConstants implements ILambdaConstants<LambdaBuilder> {
+  @override
+  LambdaBuilder identity() => LambdaBuilder.abstract(
+        LambdaBuilder.fromVar(index: 0),
+        'x',
+      );
 
-  /// Church boolean: true.
-  static final lambdaTrue = LambdaBuilder.abstract(
-    LambdaBuilder.abstract(LambdaBuilder.fromVar(index: 1), 'y'),
-    'x',
-  );
+  @override
+  LambdaBuilder lambdaTrue() => LambdaBuilder.abstract(
+        LambdaBuilder.abstract(LambdaBuilder.fromVar(index: 1), 'y'),
+        'x',
+      );
 
-  /// Church boolean: false.
-  static final lambdaFalse = LambdaBuilder.abstract(
-    LambdaBuilder.abstract(LambdaBuilder.fromVar(index: 0), 'y'),
-    'x',
-  );
+  @override
+  LambdaBuilder lambdaFalse() => LambdaBuilder.abstract(
+        LambdaBuilder.abstract(LambdaBuilder.fromVar(index: 0), 'y'),
+        'x',
+      );
 
-  /// The if expression.
-  static final lambdaTest = LambdaBuilder.abstract(
-    LambdaBuilder.abstract(
-      LambdaBuilder.abstract(
-        LambdaBuilder.applyAll(
-          [
-            LambdaBuilder.fromVar(name: 'x'),
-            LambdaBuilder.fromVar(name: 'y'),
-            LambdaBuilder.fromVar(name: 'z'),
-          ],
-        ),
-        'z',
-      ),
-      'y',
-    ),
-    'x',
-  );
-
-  /// The and expression.
-  static final lambdaAnd = LambdaBuilder.abstract(
-    LambdaBuilder.abstract(
-      LambdaBuilder.applyAll(
-        [
-          LambdaBuilder.fromVar(name: 'x'),
-          LambdaBuilder.fromVar(name: 'y'),
-          lambdaFalse,
-        ],
-      ),
-      'y',
-    ),
-    'x',
-  );
-
-  /// The or expression.
-  static final lambdaOr = LambdaBuilder.abstract(
-    LambdaBuilder.abstract(
-      LambdaBuilder.applyAll(
-        [
-          LambdaBuilder.fromVar(name: 'x'),
-          lambdaTrue,
-          LambdaBuilder.fromVar(name: 'y'),
-        ],
-      ),
-      'y',
-    ),
-    'x',
-  );
-
-  /// The not expression.
-  static final lambdaNot = LambdaBuilder.abstract(
-    LambdaBuilder.applyAll([
-      LambdaBuilder.fromVar(name: 'x'),
-      lambdaFalse,
-      lambdaTrue,
-    ]),
-    'x',
-  );
-
-  /// The church pair.
-  static final lambdaPair = LambdaBuilder.abstract(
-    LambdaBuilder.abstract(
-      LambdaBuilder.abstract(
-        LambdaBuilder.applyAll(
-          [
-            LambdaBuilder.fromVar(name: 'z'),
-            LambdaBuilder.fromVar(name: 'x'),
-            LambdaBuilder.fromVar(name: 'y'),
-          ],
-        ),
-        'z',
-      ),
-      'y',
-    ),
-    'x',
-  );
-
-  /// The fst expression.
-  static final lambdaFst = LambdaBuilder.abstract(
-    LambdaBuilder.applyAll([
-      LambdaBuilder.fromVar(name: 'x'),
-      LambdaConstants.lambdaTrue,
-    ]),
-    'x',
-  );
-
-  /// The snd expression.
-  static final lambdaSnd = LambdaBuilder.abstract(
-    LambdaBuilder.applyAll([
-      LambdaBuilder.fromVar(name: 'x'),
-      LambdaConstants.lambdaFalse,
-    ]),
-    'x',
-  );
-
-  /// The succ (+1) expression.
-  static final lambdaSucc = LambdaConversionExtension.lambdaSucc;
-
-  /// The addition expression.
-  static final lambdaPlus = LambdaBuilder.abstract(
-    LambdaBuilder.abstract(
-      LambdaBuilder.abstract(
+  @override
+  LambdaBuilder test() => LambdaBuilder.abstract(
         LambdaBuilder.abstract(
-          LambdaBuilder.applyAll([
-            LambdaBuilder.fromVar(name: 'x'),
-            LambdaBuilder.fromVar(name: 'z'),
-            LambdaBuilder.applyAll([
-              LambdaBuilder.fromVar(name: 'y'),
-              LambdaBuilder.fromVar(name: 'z'),
-              LambdaBuilder.fromVar(name: 'u'),
-            ]),
-          ]),
-          'u',
+          LambdaBuilder.abstract(
+            LambdaBuilder.applyAll(
+              [
+                LambdaBuilder.fromVar(name: 'x'),
+                LambdaBuilder.fromVar(name: 'y'),
+                LambdaBuilder.fromVar(name: 'z'),
+              ],
+            ),
+            'z',
+          ),
+          'y',
         ),
-        'z',
-      ),
-      'y',
-    ),
-    'x',
-  );
+        'x',
+      );
 
-  /// The multiplication expression.
-  static final lambdaTimes = LambdaBuilder.abstract(
-    LambdaBuilder.abstract(
-      LambdaBuilder.abstract(
+  @override
+  LambdaBuilder and() => LambdaBuilder.abstract(
+        LambdaBuilder.abstract(
+          LambdaBuilder.applyAll(
+            [
+              LambdaBuilder.fromVar(name: 'x'),
+              LambdaBuilder.fromVar(name: 'y'),
+              lambdaFalse(),
+            ],
+          ),
+          'y',
+        ),
+        'x',
+      );
+
+  @override
+  LambdaBuilder or() => LambdaBuilder.abstract(
+        LambdaBuilder.abstract(
+          LambdaBuilder.applyAll(
+            [
+              LambdaBuilder.fromVar(name: 'x'),
+              lambdaTrue(),
+              LambdaBuilder.fromVar(name: 'y'),
+            ],
+          ),
+          'y',
+        ),
+        'x',
+      );
+
+  @override
+  LambdaBuilder not() => LambdaBuilder.abstract(
+        LambdaBuilder.applyAll(
+          [
+            LambdaBuilder.fromVar(name: 'x'),
+            lambdaFalse(),
+            lambdaTrue(),
+          ],
+        ),
+        'x',
+      );
+
+  @override
+  LambdaBuilder pair() => LambdaBuilder.abstract(
+        LambdaBuilder.abstract(
+          LambdaBuilder.abstract(
+            LambdaBuilder.applyAll(
+              [
+                LambdaBuilder.fromVar(name: 'z'),
+                LambdaBuilder.fromVar(name: 'x'),
+                LambdaBuilder.fromVar(name: 'y'),
+              ],
+            ),
+            'z',
+          ),
+          'y',
+        ),
+        'x',
+      );
+
+  @override
+  LambdaBuilder fst() => LambdaBuilder.abstract(
+        LambdaBuilder.applyAll(
+          [
+            LambdaBuilder.fromVar(name: 'x'),
+            lambdaTrue(),
+          ],
+        ),
+        'x',
+      );
+
+  @override
+  LambdaBuilder snd() => LambdaBuilder.abstract(
+        LambdaBuilder.applyAll(
+          [
+            LambdaBuilder.fromVar(name: 'x'),
+            lambdaFalse(),
+          ],
+        ),
+        'x',
+      );
+
+  @override
+  LambdaBuilder succ() => LambdaBuilder.abstract(
+        LambdaBuilder.abstract(
+          LambdaBuilder.abstract(
+            LambdaBuilder(
+              form: LambdaForm.application,
+              exp1: LambdaBuilder.fromVar(name: 'y'),
+              exp2: LambdaBuilder.applyAll(
+                [
+                  LambdaBuilder.fromVar(name: 'x'),
+                  LambdaBuilder.fromVar(name: 'y'),
+                  LambdaBuilder.fromVar(name: 'z'),
+                ],
+              ),
+            ),
+            'z',
+          ),
+          'y',
+        ),
+        'x',
+      );
+
+  @override
+  LambdaBuilder plus() => LambdaBuilder.abstract(
+        LambdaBuilder.abstract(
+          LambdaBuilder.abstract(
+            LambdaBuilder.abstract(
+              LambdaBuilder.applyAll(
+                [
+                  LambdaBuilder.fromVar(name: 'x'),
+                  LambdaBuilder.fromVar(name: 'z'),
+                  LambdaBuilder.applyAll(
+                    [
+                      LambdaBuilder.fromVar(name: 'y'),
+                      LambdaBuilder.fromVar(name: 'z'),
+                      LambdaBuilder.fromVar(name: 'u'),
+                    ],
+                  ),
+                ],
+              ),
+              'u',
+            ),
+            'z',
+          ),
+          'y',
+        ),
+        'x',
+      );
+
+  @override
+  LambdaBuilder times() => LambdaBuilder.abstract(
+        LambdaBuilder.abstract(
+          LambdaBuilder.abstract(
+            LambdaBuilder.applyAll([
+              LambdaBuilder.fromVar(name: 'x'),
+              LambdaBuilder.applyAll([
+                LambdaBuilder.fromVar(name: 'y'),
+                LambdaBuilder.fromVar(name: 'z'),
+              ]),
+            ]),
+            'z',
+          ),
+          'y',
+        ),
+        'x',
+      );
+
+  @override
+  LambdaBuilder power() => LambdaBuilder.abstract(
+        LambdaBuilder.abstract(
+          LambdaBuilder.applyAll(
+            [
+              LambdaBuilder.fromVar(name: 'x'),
+              LambdaBuilder.fromVar(name: 'y'),
+            ],
+          ),
+          'x',
+        ),
+        'y',
+      );
+
+  @override
+  LambdaBuilder isZero() => LambdaBuilder.abstract(
         LambdaBuilder.applyAll([
           LambdaBuilder.fromVar(name: 'x'),
-          LambdaBuilder.applyAll([
-            LambdaBuilder.fromVar(name: 'y'),
-            LambdaBuilder.fromVar(name: 'z'),
-          ]),
+          LambdaBuilder.abstract(lambdaFalse()),
+          lambdaTrue(),
         ]),
-        'z',
-      ),
-      'y',
-    ),
-    'x',
-  );
+        'x',
+      );
 
-  /// The power expression.
-  static final lambdaPower = LambdaBuilder.abstract(
-    LambdaBuilder.abstract(
-      LambdaBuilder.applyAll([
-        LambdaBuilder.fromVar(name: 'x'),
-        LambdaBuilder.fromVar(name: 'y'),
-      ]),
-      'x',
-    ),
-    'y',
-  );
+  @override
+  LambdaBuilder zero() => lambdaFalse();
 
-  /// The is_zero expression.
-  static final lambdaIsZero = LambdaBuilder.abstract(
-    LambdaBuilder.applyAll([
-      LambdaBuilder.fromVar(name: 'x'),
-      LambdaBuilder.abstract(lambdaFalse),
-      LambdaConstants.lambdaTrue,
-    ]),
-    'x',
-  );
+  @override
+  LambdaBuilder one() => 1.toChurchNumber();
 
-  /// Church number: 0.
-  static final lambdaZero = lambdaFalse;
+  @override
+  LambdaBuilder two() => 2.toChurchNumber();
 
-  /// Church number: 1.
-  static final lambdaOne = 1.toChurchNumber();
+  @override
+  LambdaBuilder three() => 3.toChurchNumber();
 
-  /// Church number: 2.
-  static final lambdaTwo = 2.toChurchNumber();
+  @override
+  LambdaBuilder four() => 4.toChurchNumber();
 
-  /// Church number: 3.
-  static final lambdaThree = 3.toChurchNumber();
+  @override
+  LambdaBuilder five() => 5.toChurchNumber();
 
-  /// Church number: 4.
-  static final lambdaFour = 4.toChurchNumber();
+  @override
+  LambdaBuilder six() => 6.toChurchNumber();
 
-  /// Church number: 5.
-  static final lambdaFive = 5.toChurchNumber();
+  @override
+  LambdaBuilder seven() => 7.toChurchNumber();
 
-  /// Church number: 6.
-  static final lambdaSix = 6.toChurchNumber();
+  @override
+  LambdaBuilder eight() => 8.toChurchNumber();
 
-  /// Church number: 7.
-  static final lambdaSeven = 7.toChurchNumber();
+  @override
+  LambdaBuilder nine() => 9.toChurchNumber();
 
-  /// Church number: 8.
-  static final lambdaEight = 8.toChurchNumber();
+  @override
+  LambdaBuilder ten() => 10.toChurchNumber();
 
-  /// Church number: 9.
-  static final lambdaNine = 9.toChurchNumber();
+  @override
+  LambdaBuilder eleven() => 11.toChurchNumber();
 
-  /// Church number: 10.
-  static final lambdaTen = 10.toChurchNumber();
+  @override
+  LambdaBuilder twelve() => 12.toChurchNumber();
 
-  /// Church number: 11.
-  static final lambdaEleven = 11.toChurchNumber();
+  @override
+  LambdaBuilder iiyokoiyo() => 114514.toChurchNumber();
 
-  /// Church number: 12.
-  static final lambdaTwelve = 12.toChurchNumber();
+  @override
+  LambdaBuilder omega() => LambdaBuilder.applyAll([
+        LambdaBuilder.abstract(
+          LambdaBuilder.applyAll([
+            LambdaBuilder.fromVar(name: 'w'),
+            LambdaBuilder.fromVar(name: 'w'),
+          ]),
+          'w',
+        ),
+        LambdaBuilder.abstract(
+          LambdaBuilder.applyAll([
+            LambdaBuilder.fromVar(name: 'w'),
+            LambdaBuilder.fromVar(name: 'w'),
+          ]),
+          'w',
+        ),
+      ]);
 
-  /// The good era is approaching!
-  static final iiyoKoiyo = 114514.toChurchNumber();
-
-  /// The diverging omega expression.
-  static final omega = LambdaBuilder.applyAll([
-    LambdaBuilder.abstract(
-      LambdaBuilder.applyAll([
-        LambdaBuilder.fromVar(name: 'w'),
-        LambdaBuilder.fromVar(name: 'w'),
-      ]),
-      'w',
-    ),
-    LambdaBuilder.abstract(
-      LambdaBuilder.applyAll([
-        LambdaBuilder.fromVar(name: 'w'),
-        LambdaBuilder.fromVar(name: 'w'),
-      ]),
-      'w',
-    ),
-  ]);
-
-  /// The Y-Combinator that works for both 'call by name' and 'call by value'
-  /// schemes.
-  static final yCombinator = LambdaBuilder.abstract(
-    LambdaBuilder(
-      form: LambdaForm.application,
-      exp1: LambdaBuilder.abstract(
+  @override
+  LambdaBuilder yCombinator() => LambdaBuilder.abstract(
         LambdaBuilder(
           form: LambdaForm.application,
-          exp1: LambdaBuilder.fromVar(name: 'f'),
+          exp1: LambdaBuilder.abstract(
+            LambdaBuilder(
+              form: LambdaForm.application,
+              exp1: LambdaBuilder.fromVar(name: 'f'),
+              exp2: LambdaBuilder.abstract(
+                LambdaBuilder(
+                  form: LambdaForm.application,
+                  exp1: LambdaBuilder(
+                    form: LambdaForm.application,
+                    exp1: LambdaBuilder.fromVar(name: 'x'),
+                    exp2: LambdaBuilder.fromVar(name: 'x'),
+                  ),
+                  exp2: LambdaBuilder.fromVar(name: 'y'),
+                ),
+                'y',
+              ),
+            ),
+            'x',
+          ),
           exp2: LambdaBuilder.abstract(
             LambdaBuilder(
               form: LambdaForm.application,
-              exp1: LambdaBuilder(
-                form: LambdaForm.application,
-                exp1: LambdaBuilder.fromVar(name: 'x'),
-                exp2: LambdaBuilder.fromVar(name: 'x'),
+              exp1: LambdaBuilder.fromVar(name: 'f'),
+              exp2: LambdaBuilder.abstract(
+                LambdaBuilder(
+                  form: LambdaForm.application,
+                  exp1: LambdaBuilder(
+                    form: LambdaForm.application,
+                    exp1: LambdaBuilder.fromVar(name: 'x'),
+                    exp2: LambdaBuilder.fromVar(name: 'x'),
+                  ),
+                  exp2: LambdaBuilder.fromVar(name: 'y'),
+                ),
+                'y',
               ),
-              exp2: LambdaBuilder.fromVar(name: 'y'),
             ),
-            'y',
+            'x',
           ),
         ),
-        'x',
-      ),
-      exp2: LambdaBuilder.abstract(
-        LambdaBuilder(
-          form: LambdaForm.application,
-          exp1: LambdaBuilder.fromVar(name: 'f'),
-          exp2: LambdaBuilder.abstract(
-            LambdaBuilder(
-              form: LambdaForm.application,
-              exp1: LambdaBuilder(
-                form: LambdaForm.application,
-                exp1: LambdaBuilder.fromVar(name: 'x'),
-                exp2: LambdaBuilder.fromVar(name: 'x'),
-              ),
-              exp2: LambdaBuilder.fromVar(name: 'y'),
-            ),
-            'y',
-          ),
-        ),
-        'x',
-      ),
-    ),
-    'f',
-  );
+        'f',
+      );
+}
+
+class LambdaConstants implements ILambdaConstants<Lambda> {
+  @override
+  Lambda identity() => LambdaBuilderConstants().identity().build();
+
+  @override
+  Lambda lambdaTrue() => LambdaBuilderConstants().lambdaTrue().build();
+
+  @override
+  Lambda lambdaFalse() => LambdaBuilderConstants().lambdaFalse().build();
+
+  @override
+  Lambda and() => LambdaBuilderConstants().and().build();
+
+  @override
+  Lambda or() => LambdaBuilderConstants().or().build();
+
+  @override
+  Lambda not() => LambdaBuilderConstants().not().build();
+
+  @override
+  Lambda test() => LambdaBuilderConstants().test().build();
+
+  @override
+  Lambda pair() => LambdaBuilderConstants().pair().build();
+
+  @override
+  Lambda fst() => LambdaBuilderConstants().fst().build();
+
+  @override
+  Lambda snd() => LambdaBuilderConstants().snd().build();
+
+  @override
+  Lambda succ() => LambdaBuilderConstants().succ().build();
+
+  @override
+  Lambda plus() => LambdaBuilderConstants().plus().build();
+
+  @override
+  Lambda times() => LambdaBuilderConstants().times().build();
+
+  @override
+  Lambda power() => LambdaBuilderConstants().power().build();
+
+  @override
+  Lambda isZero() => LambdaBuilderConstants().isZero().build();
+
+  @override
+  Lambda zero() => LambdaBuilderConstants().zero().build();
+
+  @override
+  Lambda one() => LambdaBuilderConstants().one().build();
+
+  @override
+  Lambda two() => LambdaBuilderConstants().two().build();
+
+  @override
+  Lambda three() => LambdaBuilderConstants().three().build();
+
+  @override
+  Lambda four() => LambdaBuilderConstants().four().build();
+
+  @override
+  Lambda five() => LambdaBuilderConstants().five().build();
+
+  @override
+  Lambda six() => LambdaBuilderConstants().six().build();
+
+  @override
+  Lambda seven() => LambdaBuilderConstants().seven().build();
+
+  @override
+  Lambda eight() => LambdaBuilderConstants().eight().build();
+
+  @override
+  Lambda nine() => LambdaBuilderConstants().nine().build();
+
+  @override
+  Lambda ten() => LambdaBuilderConstants().ten().build();
+
+  @override
+  Lambda eleven() => LambdaBuilderConstants().eleven().build();
+
+  @override
+  Lambda twelve() => LambdaBuilderConstants().twelve().build();
+
+  @override
+  Lambda iiyokoiyo() => LambdaBuilderConstants().iiyokoiyo().build();
+
+  @override
+  Lambda omega() => LambdaBuilderConstants().omega().build();
+
+  @override
+  Lambda yCombinator() => LambdaBuilderConstants().yCombinator().build();
 }

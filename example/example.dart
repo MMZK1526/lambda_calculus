@@ -32,19 +32,19 @@ void _printExamples() {
   // This function prints out several useful lambda expressions.
 
   print('Some lambda expressions with minimal brackets: ');
-  print('Lambda Id:    ${LambdaConstants.lambdaIdentity}');
-  print('Lambda True:  ${LambdaConstants.lambdaTrue}');
-  print('Lambda False: ${LambdaConstants.lambdaFalse}');
-  print('Lambda Test:  ${LambdaConstants.lambdaTest}');
-  print('Lambda And:   ${LambdaConstants.lambdaAnd}');
-  print('Lambda Pair:  ${LambdaConstants.lambdaPair}');
-  print('Lambda Not:   ${LambdaConstants.lambdaNot}');
-  print('Lambda Succ:  ${LambdaConstants.lambdaSucc}');
-  print('Lambda Times: ${LambdaConstants.lambdaTimes}');
-  print('Lambda Plus:  ${LambdaConstants.lambdaPlus}');
-  print('Lambda Seven: ${LambdaConstants.lambdaSeven}');
-  print('Omega:        ${LambdaConstants.omega}');
-  print('Y-Combinator: ${LambdaConstants.yCombinator}');
+  print('Lambda Id:    ${Lambda.constants.identity()}');
+  print('Lambda True:  ${Lambda.constants.lambdaTrue()}');
+  print('Lambda False: ${Lambda.constants.lambdaFalse()}');
+  print('Lambda Test:  ${Lambda.constants.test()}');
+  print('Lambda And:   ${Lambda.constants.and()}');
+  print('Lambda Pair:  ${Lambda.constants.pair()}');
+  print('Lambda Not:   ${Lambda.constants.not()}');
+  print('Lambda Succ:  ${Lambda.constants.succ()}');
+  print('Lambda Times: ${Lambda.constants.times()}');
+  print('Lambda Plus:  ${Lambda.constants.plus()}');
+  print('Lambda Seven: ${Lambda.constants.seven()}');
+  print('Omega:        ${Lambda.constants.omega()}');
+  print('Y-Combinator: ${Lambda.constants.yCombinator()}');
   print('');
 }
 
@@ -141,10 +141,10 @@ void _evaluationsByValue() {
 
   print('Evaluate lambda expressions with the "call by value" scheme: ');
   temp = LambdaBuilder.applyAll([
-    LambdaConstants.lambdaTest,
-    LambdaConstants.lambdaTrue,
-    LambdaConstants.lambdaTwo,
-    LambdaConstants.lambdaOne,
+    Lambda.constants.test(),
+    Lambda.constants.lambdaTrue(),
+    Lambda.constants.two(),
+    Lambda.constants.one(),
   ]).build();
 
   // We use the .eval1() method to evaluate a lambda expression by one step.
@@ -159,10 +159,10 @@ void _evaluationsByValue() {
   // We use the .eval() method to evaluate a lambda expression fully.
   print("2. Evaluate 'test false 2 1' directly to its simplest form: ");
   temp = LambdaBuilder.applyAll([
-    LambdaConstants.lambdaTest,
-    LambdaConstants.lambdaFalse,
-    LambdaConstants.lambdaTwo,
-    LambdaConstants.lambdaOne,
+    Lambda.constants.test(),
+    Lambda.constants.lambdaFalse(),
+    Lambda.constants.two(),
+    Lambda.constants.one(),
   ]).build();
   print('    $temp\n  = ${temp.eval()}');
 
@@ -171,7 +171,7 @@ void _evaluationsByValue() {
   temp = Lambda(
     form: LambdaForm.abstraction,
     exp1: LambdaBuilder.applyAll(
-      [LambdaConstants.lambdaIdentity, LambdaConstants.lambdaFalse],
+      [Lambda.constants.identity(), Lambda.constants.lambdaFalse()],
     ).build(),
   );
   print('    $temp\n  = ${temp.eval()}');
@@ -180,8 +180,8 @@ void _evaluationsByValue() {
   // but syntactically distinct from 3.
   print("4. Evaluate 'succ 2', but the result is not the same as '3': ");
   temp = LambdaBuilder.applyAll([
-    LambdaConstants.lambdaSucc,
-    LambdaConstants.lambdaTwo,
+    Lambda.constants.succ(),
+    Lambda.constants.two(),
   ]).build();
   print('    $temp\n  = ${temp.eval()}');
   print("5. Evaluate 'succ 2', converting it to a natural number: ");
@@ -201,27 +201,27 @@ void _fullEvaluations() {
   // beta-reduction.
   print("1. Evaluate '2 + 3' directly to its simplest form: ");
   temp = LambdaBuilder.applyAll([
-    LambdaConstants.lambdaPlus,
-    LambdaConstants.lambdaTwo,
-    LambdaConstants.lambdaThree,
+    Lambda.constants.plus(),
+    Lambda.constants.two(),
+    Lambda.constants.three(),
   ]).build();
   print('    $temp');
   print('  = ${temp.eval(evalType: LambdaEvaluationType.fullReduction)}');
 
   print("2. Evaluate '2 * 3' directly to its simplest form: ");
   temp = LambdaBuilder.applyAll([
-    LambdaConstants.lambdaTimes,
-    LambdaConstants.lambdaTwo,
-    LambdaConstants.lambdaThree,
+    Lambda.constants.times(),
+    Lambda.constants.two(),
+    Lambda.constants.three(),
   ]).build();
   print('    $temp');
   print('  = ${temp.eval(evalType: LambdaEvaluationType.fullReduction)}');
 
   print("3. Evaluate '2 ^ 3' directly to its simplest form: ");
   temp = LambdaBuilder.applyAll([
-    LambdaConstants.lambdaPower,
-    LambdaConstants.lambdaTwo,
-    LambdaConstants.lambdaThree,
+    Lambda.constants.power(),
+    Lambda.constants.two(),
+    Lambda.constants.three(),
   ]).build();
   print('    $temp');
   print('  = ${temp.eval(evalType: LambdaEvaluationType.fullReduction)}');
@@ -240,9 +240,9 @@ void _evaluationsByName() {
   // "call-by-name" scheme.
   print("1. Evaluate 'true 1 omega' lazily (call by name): ");
   temp = LambdaBuilder.applyAll([
-    LambdaConstants.lambdaTrue,
-    LambdaConstants.lambdaOne,
-    LambdaConstants.omega,
+    Lambda.constants.lambdaTrue(),
+    Lambda.constants.one(),
+    Lambda.constants.omega(),
   ]).build();
   print('    $temp');
   print('  = ${temp.eval1(evalType: LambdaEvaluationType.callByName)}');
@@ -267,7 +267,7 @@ void _factorial() {
 
   print('Recursive factorial function with the Y-Combinator: ');
   final factorial = LambdaBuilder.applyAll([
-    LambdaConstants.yCombinator,
+    Lambda.constants.yCombinator(),
     r'''
     \a\b(\\c\2(c)(0))((\0(\\\0)(\\1))b)(\\\1(0))(\(\\d\2(d(0)))b(a((\c(\0(\\1))
     (c(\d(\a\b\0(a)(b))((\0(\\0))d)((\a\\1(a(1)(0)))((\0(\\0))d)))((\d\a\0(d)
@@ -278,13 +278,13 @@ void _factorial() {
   print('The factorial lamdba expression: ');
   print('    $factorial');
   print('1. Evaluate 0!: ');
-  result = LambdaBuilder.applyAll([factorial, LambdaConstants.lambdaZero])
+  result = LambdaBuilder.applyAll([factorial, Lambda.constants.zero()])
       .build()
       .eval();
   print('    $result');
   print('  = ${result.toInt()}');
   print('2. Evaluate 3!: ');
-  result = LambdaBuilder.applyAll([factorial, LambdaConstants.lambdaThree])
+  result = LambdaBuilder.applyAll([factorial, Lambda.constants.three()])
       .build()
       .eval();
   print('    $result');
