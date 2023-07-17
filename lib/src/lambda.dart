@@ -1,15 +1,9 @@
 import 'package:dartz/dartz.dart';
-
-/// Types of lambda expressions.
-enum LambdaForm {
-  variable,
-  application,
-  abstraction,
-  dummy, // No meaning; for parsing purpose
-}
+import 'package:lambda_calculus/src/lambda_form.dart';
+import 'package:lambda_calculus/src/lambda_interface.dart';
 
 /// The class representing lambda expressions.
-class Lambda {
+class Lambda implements ILambda<Lambda> {
   Lambda({
     required this.form,
     this.index, // For variable
@@ -17,92 +11,29 @@ class Lambda {
     this.exp1, // For application and abstraction
     this.exp2, // For application
   }) : assert(!(form == LambdaForm.variable &&
-                ((index == null && name == null) ||
-                    exp1 != null ||
-                    exp2 != null)) &&
+                (index == null || exp1 != null || exp2 != null)) &&
             !(form == LambdaForm.application &&
                 (index != null ||
                     name != null ||
                     exp1 == null ||
                     exp2 == null)) &&
             !(form == LambdaForm.abstraction &&
-                (index != null || exp1 == null || exp2 != null))) {
-    switch (form) {
-      case LambdaForm.variable:
-        if (name != null) freeVars.add(name!);
-        break;
-      case LambdaForm.abstraction:
-        freeVars = Set.of(exp1!.freeVars)..remove(name);
-        break;
-      case LambdaForm.application:
-        freeVars = exp1!.freeVars.union(exp2!.freeVars);
-        break;
-      default:
-        break;
-    }
-  }
+                (index != null || exp1 == null || exp2 != null)));
 
+  @override
   LambdaForm form;
+
+  @override
   int? index;
+
+  @override
   String? name;
+
+  @override
   Lambda? exp1;
+
+  @override
   Lambda? exp2;
-  Set<String> freeVars = {};
-
-  /// Construct a lambda variable with the given De Bruijn index and name. At
-  /// most one of them can be optional
-  static Lambda fromVar({int? index, String? name}) {
-    assert(index != null || name != null);
-    return Lambda(form: LambdaForm.variable, index: index, name: name);
-  }
-
-  /// Construct the abstraction of a given lambda expression, with an optional
-  /// name of the argument.
-  static Lambda abstract(Lambda lambda, [String? name]) =>
-      Lambda(form: LambdaForm.abstraction, exp1: lambda, name: name);
-
-  /// Apply a list of lambda expressions together from left to right.
-  static Lambda applyAll(List<Lambda> lambdas) {
-    if (lambdas.isEmpty) {
-      return Lambda(
-        form: LambdaForm.abstraction,
-        exp1: Lambda(form: LambdaForm.variable, index: 0),
-      );
-    }
-
-    return lambdas.reduce(
-      (previousValue, element) => Lambda(
-        form: LambdaForm.application,
-        exp1: previousValue,
-        exp2: element,
-      ),
-    );
-  }
-
-  /// Apply a list of lambda expressions together from right to left.
-  static Lambda applyAllReversed(List<Lambda> lambdas) {
-    if (lambdas.isEmpty) {
-      return Lambda(
-        form: LambdaForm.abstraction,
-        exp1: Lambda(form: LambdaForm.variable, index: 0),
-      );
-    }
-
-    Lambda applyAllReversedHelper(List<Lambda> lambdas) {
-      if (lambdas.length == 1) {
-        return lambdas.first;
-      }
-
-      final first = lambdas.removeAt(0);
-      return Lambda(
-        form: LambdaForm.application,
-        exp1: first,
-        exp2: applyAllReversed(lambdas),
-      );
-    }
-
-    return applyAllReversedHelper(List.of(lambdas));
-  }
 
   /// A higher-order function that iterates on the [Lambda], returning a value.
   R fold<R, T>({

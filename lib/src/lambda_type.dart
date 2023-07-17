@@ -2,6 +2,7 @@ import 'dart:collection';
 
 import 'package:collection/collection.dart';
 import 'package:lambda_calculus/src/lambda.dart';
+import 'package:lambda_calculus/src/lambda_form.dart';
 
 extension LamdbaTypeExtension on Lambda {
   LambdaType? findType() {

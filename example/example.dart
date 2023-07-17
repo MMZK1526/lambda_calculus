@@ -140,12 +140,12 @@ void _evaluationsByValue() {
   Lambda temp;
 
   print('Evaluate lambda expressions with the "call by value" scheme: ');
-  temp = Lambda.applyAll([
+  temp = LambdaBuilder.applyAll([
     LambdaConstants.lambdaTest,
     LambdaConstants.lambdaTrue,
     LambdaConstants.lambdaTwo,
     LambdaConstants.lambdaOne,
-  ]);
+  ]).build();
 
   // We use the .eval1() method to evaluate a lambda expression by one step.
   print("1. Evaluate 'test true 2 1' step-by-step: ");
@@ -155,34 +155,34 @@ void _evaluationsByValue() {
   print('  = ${temp.eval1()!.eval1()!.eval1()}');
   print('  = ${temp.eval1()!.eval1()!.eval1()!.eval1()}');
   print('  = ${temp.eval1()!.eval1()!.eval1()!.eval1()!.eval1()}');
-  temp = Lambda.applyAll([
+
+  // We use the .eval() method to evaluate a lambda expression fully.
+  print("2. Evaluate 'test false 2 1' directly to its simplest form: ");
+  temp = LambdaBuilder.applyAll([
     LambdaConstants.lambdaTest,
     LambdaConstants.lambdaFalse,
     LambdaConstants.lambdaTwo,
     LambdaConstants.lambdaOne,
-  ]);
-
-  // We use the .eval() method to evaluate a lambda expression fully.
-  print("2. Evaluate 'test false 2 1' directly to its simplest form: ");
+  ]).build();
   print('    $temp\n  = ${temp.eval()}');
-  temp = Lambda(
-    form: LambdaForm.abstraction,
-    exp1: Lambda.applyAll(
-      [LambdaConstants.lambdaIdentity, LambdaConstants.lambdaFalse],
-    ),
-  );
 
   // Demonstration of the "call by value" scheme.
   print('3. An application within an abstraction is not reduced: ');
+  temp = Lambda(
+    form: LambdaForm.abstraction,
+    exp1: LambdaBuilder.applyAll(
+      [LambdaConstants.lambdaIdentity, LambdaConstants.lambdaFalse],
+    ).build(),
+  );
   print('    $temp\n  = ${temp.eval()}');
-  temp = Lambda.applyAll([
-    LambdaConstants.lambdaSucc,
-    LambdaConstants.lambdaTwo,
-  ]);
 
   // Another example: 'succ 2' results an expression behaviourally equivalent to
   // but syntactically distinct from 3.
   print("4. Evaluate 'succ 2', but the result is not the same as '3': ");
+  temp = LambdaBuilder.applyAll([
+    LambdaConstants.lambdaSucc,
+    LambdaConstants.lambdaTwo,
+  ]).build();
   print('    $temp\n  = ${temp.eval()}');
   print("5. Evaluate 'succ 2', converting it to a natural number: ");
   print('    $temp\n  = ${temp.toInt()}');
@@ -196,31 +196,33 @@ void _fullEvaluations() {
   Lambda temp;
 
   print('Evaluate lambda expressions using full beta-reduction: ');
-  temp = Lambda.applyAll([
-    LambdaConstants.lambdaPlus,
-    LambdaConstants.lambdaTwo,
-    LambdaConstants.lambdaThree,
-  ]);
   // We pass 'LambdaEvaluationType.FULL_REDUCTION' to the 'evalType' parameter
   // in .eval() method to evaluate a lambda expression through full
   // beta-reduction.
   print("1. Evaluate '2 + 3' directly to its simplest form: ");
+  temp = LambdaBuilder.applyAll([
+    LambdaConstants.lambdaPlus,
+    LambdaConstants.lambdaTwo,
+    LambdaConstants.lambdaThree,
+  ]).build();
   print('    $temp');
   print('  = ${temp.eval(evalType: LambdaEvaluationType.fullReduction)}');
-  temp = Lambda.applyAll([
+
+  print("2. Evaluate '2 * 3' directly to its simplest form: ");
+  temp = LambdaBuilder.applyAll([
     LambdaConstants.lambdaTimes,
     LambdaConstants.lambdaTwo,
     LambdaConstants.lambdaThree,
-  ]);
-  print("2. Evaluate '2 * 3' directly to its simplest form: ");
+  ]).build();
   print('    $temp');
   print('  = ${temp.eval(evalType: LambdaEvaluationType.fullReduction)}');
-  temp = Lambda.applyAll([
+
+  print("3. Evaluate '2 ^ 3' directly to its simplest form: ");
+  temp = LambdaBuilder.applyAll([
     LambdaConstants.lambdaPower,
     LambdaConstants.lambdaTwo,
     LambdaConstants.lambdaThree,
-  ]);
-  print("3. Evaluate '2 ^ 3' directly to its simplest form: ");
+  ]).build();
   print('    $temp');
   print('  = ${temp.eval(evalType: LambdaEvaluationType.fullReduction)}');
   print('');
@@ -233,15 +235,15 @@ void _evaluationsByName() {
   Lambda temp;
 
   print('Compare "call by name" with "call by value": ');
-  temp = Lambda.applyAll([
-    LambdaConstants.lambdaTrue,
-    LambdaConstants.lambdaOne,
-    LambdaConstants.omega,
-  ]);
   // We pass 'LambdaEvaluationType.CALL_BY_NAME' to the 'evalType' parameter
   // in .eval1() method to evaluate a lambda expression through the
   // "call-by-name" scheme.
   print("1. Evaluate 'true 1 omega' lazily (call by name): ");
+  temp = LambdaBuilder.applyAll([
+    LambdaConstants.lambdaTrue,
+    LambdaConstants.lambdaOne,
+    LambdaConstants.omega,
+  ]).build();
   print('    $temp');
   print('  = ${temp.eval1(evalType: LambdaEvaluationType.callByName)}');
   print(
@@ -264,7 +266,7 @@ void _factorial() {
   Lambda result;
 
   print('Recursive factorial function with the Y-Combinator: ');
-  final factorial = Lambda.applyAll([
+  final factorial = LambdaBuilder.applyAll([
     LambdaConstants.yCombinator,
     r'''
     \a\b(\\c\2(c)(0))((\0(\\\0)(\\1))b)(\\\1(0))(\(\\d\2(d(0)))b(a((\c(\0(\\1))
@@ -272,15 +274,19 @@ void _factorial() {
     (a))(\\0)(\\0))))b)))(\0)
     '''
         .toLambda()!,
-  ]);
+  ]).build();
   print('The factorial lamdba expression: ');
   print('    $factorial');
   print('1. Evaluate 0!: ');
-  result = Lambda.applyAll([factorial, LambdaConstants.lambdaZero]).eval();
+  result = LambdaBuilder.applyAll([factorial, LambdaConstants.lambdaZero])
+      .build()
+      .eval();
   print('    $result');
   print('  = ${result.toInt()}');
   print('2. Evaluate 3!: ');
-  result = Lambda.applyAll([factorial, LambdaConstants.lambdaThree]).eval();
+  result = LambdaBuilder.applyAll([factorial, LambdaConstants.lambdaThree])
+      .build()
+      .eval();
   print('    $result');
   print('  = ${result.toInt()}');
   print('');

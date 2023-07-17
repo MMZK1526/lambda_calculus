@@ -1,7 +1,9 @@
 import 'dart:math';
 
+import 'package:lambda_calculus/src/lambda_builder.dart';
 import 'package:lambda_calculus/src/lambda_evaluator.dart';
 import 'package:lambda_calculus/src/lambda.dart';
+import 'package:lambda_calculus/src/lambda_form.dart';
 
 extension LambdaConversionIntExtension on int {
   /// Convert a natural number to church number.
@@ -10,31 +12,31 @@ extension LambdaConversionIntExtension on int {
   Lambda toChurchNumber() {
     var n = max(this, 0);
 
-    return Lambda.abstract(
-      Lambda.abstract(
-        Lambda.applyAllReversed([
-          for (int ix = 0; ix < n; ix++) Lambda.fromVar(name: 'x'),
-          Lambda.fromVar(name: 'y'),
+    return LambdaBuilder.abstract(
+      LambdaBuilder.abstract(
+        LambdaBuilder.applyAllReversed([
+          for (int ix = 0; ix < n; ix++) LambdaBuilder.fromVar(name: 'x'),
+          LambdaBuilder.fromVar(name: 'y'),
         ]),
         'y',
       ),
       'x',
-    );
+    ).build();
   }
 }
 
 extension LambdaConversionExtension on Lambda {
   /// The succ (+1) expression.
-  static final lambdaSucc = Lambda.abstract(
-    Lambda.abstract(
-      Lambda.abstract(
-        Lambda(
+  static final lambdaSucc = LambdaBuilder.abstract(
+    LambdaBuilder.abstract(
+      LambdaBuilder.abstract(
+        LambdaBuilder(
           form: LambdaForm.application,
-          exp1: Lambda.fromVar(name: 'y'),
-          exp2: Lambda.applyAll([
-            Lambda.fromVar(name: 'x'),
-            Lambda.fromVar(name: 'y'),
-            Lambda.fromVar(name: 'z'),
+          exp1: LambdaBuilder.fromVar(name: 'y'),
+          exp2: LambdaBuilder.applyAll([
+            LambdaBuilder.fromVar(name: 'x'),
+            LambdaBuilder.fromVar(name: 'y'),
+            LambdaBuilder.fromVar(name: 'z'),
           ]),
         ),
         'z',
@@ -50,7 +52,8 @@ extension LambdaConversionExtension on Lambda {
   /// number.
   int toInt() {
     try {
-      var temp = Lambda.applyAll([this, lambdaSucc, 0.toChurchNumber()])
+      var temp = LambdaBuilder.applyAll([this, lambdaSucc, 0.toChurchNumber()])
+          .build()
           .eval(evalType: LambdaEvaluationType.fullReduction)
           .exp1!
           .exp1!;

@@ -1,4 +1,5 @@
 import 'package:lambda_calculus/src/lambda.dart';
+import 'package:lambda_calculus/src/lambda_form.dart';
 
 enum LambdaEvaluationType {
   /// Call by name, attempts to reduce everything.

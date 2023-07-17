@@ -1,4 +1,5 @@
 import 'package:lambda_calculus/src/lambda.dart';
+import 'package:lambda_calculus/src/lambda_form.dart';
 
 /// Types of lambda tokens.
 enum LambdaTokenType {
@@ -307,7 +308,13 @@ Lambda? _lambdaParser(List<LambdaToken> tokens) {
           if (op == LambdaTokenType.rbrace) return null;
           if (op == LambdaTokenType.lambda) {
             final varName = varStack.removeLast();
-            lambdaStack.add(Lambda.abstract(lambdaStack.removeLast(), varName));
+            lambdaStack.add(
+              Lambda(
+                form: LambdaForm.abstraction,
+                name: varName,
+                exp1: lambdaStack.removeLast(),
+              ),
+            );
             continue;
           }
           final lambda2 = lambdaStack.removeLast();
@@ -318,7 +325,11 @@ Lambda? _lambdaParser(List<LambdaToken> tokens) {
         }
         break;
       case LambdaTokenType.variable:
-        lambdaStack.add(Lambda.fromVar(index: token.index, name: token.name));
+        lambdaStack.add(Lambda(
+          form: LambdaForm.variable,
+          index: token.index,
+          name: token.name,
+        ));
         break;
     }
   }
@@ -329,7 +340,13 @@ Lambda? _lambdaParser(List<LambdaToken> tokens) {
     if (op == LambdaTokenType.lambda) {
       if (lambdaStack.isEmpty) return null;
       final varName = varStack.removeLast();
-      lambdaStack.add(Lambda.abstract(lambdaStack.removeLast(), varName));
+      lambdaStack.add(
+        Lambda(
+          form: LambdaForm.abstraction,
+          name: varName,
+          exp1: lambdaStack.removeLast(),
+        ),
+      );
       continue;
     }
     // MARK: Application
