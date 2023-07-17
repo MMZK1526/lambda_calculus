@@ -28,6 +28,11 @@ final fortyTwo = 42.toChurchNumber();
 final iiyokoiyo = 114514.toChurchNumber(); // I wouldn't try to print out this one...
 
 // Evaluate a lambda expression
+// Note that we use `LambdaBuilder` to constructor lambda expressions bottom-up.
+// We need to call the `build` method at the end to get the final lambda
+// expression.
+// Both `LambdaBuilder` and `Lambda` provides a number of constants and
+// combinators for convenience.
 final twoTimesThree = LambdaBuilder.applyAll([
   LambdaBuilder.constants.lambdaTimes,
   LambdaBuilder.lambdaTwo,
@@ -50,8 +55,7 @@ print(yCombinator.findType()); // null
 
 See [here](example/example.dart) for more examples.
 
-## Documentation
-TODO
+TODO: Improve the API documentation.
 
 ## Known Issues
 1. Lambdas with named variables constructed by constructors sometime behave weirdly. For now please only use lambdas parsed from strings.
