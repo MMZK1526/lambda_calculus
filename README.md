@@ -28,11 +28,11 @@ final fortyTwo = 42.toChurchNumber();
 final iiyokoiyo = 114514.toChurchNumber(); // I wouldn't try to print out this one...
 
 // Evaluate a lambda expression
-final twoTimesThree = Lambda.applyAll([
-  LambdaConstants.lambdaTimes,
-  LambdaConstants.lambdaTwo,
-  LambdaConstants.lambdaThree,
-]);
+final twoTimesThree = LambdaBuilder.applyAll([
+  LambdaBuilder.constants.lambdaTimes,
+  LambdaBuilder.lambdaTwo,
+  LambdaBuilder.lambdaThree,
+]).build();
 final evalOneStep = twoTimesThree.eval1();
 // Note that the 'eval' function does not terminate if the term does not have
 // a normal form.

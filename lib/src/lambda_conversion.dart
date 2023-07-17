@@ -9,7 +9,9 @@ extension LambdaConversionIntExtension on int {
   /// Convert a natural number to church number.
   ///
   /// Negative numbers treated as zero.
-  LambdaBuilder toChurchNumber() {
+  Lambda toChurchNumber() => toChurchNumberBuilder().build();
+
+  LambdaBuilder toChurchNumberBuilder() {
     var n = max(this, 0);
 
     return LambdaBuilder.abstract(
@@ -52,11 +54,12 @@ extension LambdaConversionExtension on Lambda {
   /// number.
   int toInt() {
     try {
-      var temp = LambdaBuilder.applyAll([this, lambdaSucc, 0.toChurchNumber()])
-          .build()
-          .eval(evalType: LambdaEvaluationType.fullReduction)
-          .exp1!
-          .exp1!;
+      var temp =
+          LambdaBuilder.applyAll([this, lambdaSucc, 0.toChurchNumberBuilder()])
+              .build()
+              .eval(evalType: LambdaEvaluationType.fullReduction)
+              .exp1!
+              .exp1!;
       var num = 0;
       while (temp.form == LambdaForm.application) {
         num++;

@@ -219,43 +219,43 @@ class LambdaBuilderConstants implements ILambdaConstants<LambdaBuilder> {
   LambdaBuilder zero() => lambdaFalse();
 
   @override
-  LambdaBuilder one() => 1.toChurchNumber();
+  LambdaBuilder one() => 1.toChurchNumberBuilder();
 
   @override
-  LambdaBuilder two() => 2.toChurchNumber();
+  LambdaBuilder two() => 2.toChurchNumberBuilder();
 
   @override
-  LambdaBuilder three() => 3.toChurchNumber();
+  LambdaBuilder three() => 3.toChurchNumberBuilder();
 
   @override
-  LambdaBuilder four() => 4.toChurchNumber();
+  LambdaBuilder four() => 4.toChurchNumberBuilder();
 
   @override
-  LambdaBuilder five() => 5.toChurchNumber();
+  LambdaBuilder five() => 5.toChurchNumberBuilder();
 
   @override
-  LambdaBuilder six() => 6.toChurchNumber();
+  LambdaBuilder six() => 6.toChurchNumberBuilder();
 
   @override
-  LambdaBuilder seven() => 7.toChurchNumber();
+  LambdaBuilder seven() => 7.toChurchNumberBuilder();
 
   @override
-  LambdaBuilder eight() => 8.toChurchNumber();
+  LambdaBuilder eight() => 8.toChurchNumberBuilder();
 
   @override
-  LambdaBuilder nine() => 9.toChurchNumber();
+  LambdaBuilder nine() => 9.toChurchNumberBuilder();
 
   @override
-  LambdaBuilder ten() => 10.toChurchNumber();
+  LambdaBuilder ten() => 10.toChurchNumberBuilder();
 
   @override
-  LambdaBuilder eleven() => 11.toChurchNumber();
+  LambdaBuilder eleven() => 11.toChurchNumberBuilder();
 
   @override
-  LambdaBuilder twelve() => 12.toChurchNumber();
+  LambdaBuilder twelve() => 12.toChurchNumberBuilder();
 
   @override
-  LambdaBuilder iiyokoiyo() => 114514.toChurchNumber();
+  LambdaBuilder iiyokoiyo() => 114514.toChurchNumberBuilder();
 
   @override
   LambdaBuilder omega() => LambdaBuilder.applyAll([

@@ -141,10 +141,10 @@ void _evaluationsByValue() {
 
   print('Evaluate lambda expressions with the "call by value" scheme: ');
   temp = LambdaBuilder.applyAll([
-    Lambda.constants.test(),
-    Lambda.constants.lambdaTrue(),
-    Lambda.constants.two(),
-    Lambda.constants.one(),
+    LambdaBuilder.constants.test(),
+    LambdaBuilder.constants.lambdaTrue(),
+    LambdaBuilder.constants.two(),
+    LambdaBuilder.constants.one(),
   ]).build();
 
   // We use the .eval1() method to evaluate a lambda expression by one step.
@@ -159,10 +159,10 @@ void _evaluationsByValue() {
   // We use the .eval() method to evaluate a lambda expression fully.
   print("2. Evaluate 'test false 2 1' directly to its simplest form: ");
   temp = LambdaBuilder.applyAll([
-    Lambda.constants.test(),
-    Lambda.constants.lambdaFalse(),
-    Lambda.constants.two(),
-    Lambda.constants.one(),
+    LambdaBuilder.constants.test(),
+    LambdaBuilder.constants.lambdaFalse(),
+    LambdaBuilder.constants.two(),
+    LambdaBuilder.constants.one(),
   ]).build();
   print('    $temp\n  = ${temp.eval()}');
 
@@ -171,7 +171,10 @@ void _evaluationsByValue() {
   temp = Lambda(
     form: LambdaForm.abstraction,
     exp1: LambdaBuilder.applyAll(
-      [Lambda.constants.identity(), Lambda.constants.lambdaFalse()],
+      [
+        LambdaBuilder.constants.identity(),
+        LambdaBuilder.constants.lambdaFalse(),
+      ],
     ).build(),
   );
   print('    $temp\n  = ${temp.eval()}');
@@ -180,8 +183,8 @@ void _evaluationsByValue() {
   // but syntactically distinct from 3.
   print("4. Evaluate 'succ 2', but the result is not the same as '3': ");
   temp = LambdaBuilder.applyAll([
-    Lambda.constants.succ(),
-    Lambda.constants.two(),
+    LambdaBuilder.constants.succ(),
+    LambdaBuilder.constants.two(),
   ]).build();
   print('    $temp\n  = ${temp.eval()}');
   print("5. Evaluate 'succ 2', converting it to a natural number: ");
@@ -201,27 +204,27 @@ void _fullEvaluations() {
   // beta-reduction.
   print("1. Evaluate '2 + 3' directly to its simplest form: ");
   temp = LambdaBuilder.applyAll([
-    Lambda.constants.plus(),
-    Lambda.constants.two(),
-    Lambda.constants.three(),
+    LambdaBuilder.constants.plus(),
+    LambdaBuilder.constants.two(),
+    LambdaBuilder.constants.three(),
   ]).build();
   print('    $temp');
   print('  = ${temp.eval(evalType: LambdaEvaluationType.fullReduction)}');
 
   print("2. Evaluate '2 * 3' directly to its simplest form: ");
   temp = LambdaBuilder.applyAll([
-    Lambda.constants.times(),
-    Lambda.constants.two(),
-    Lambda.constants.three(),
+    LambdaBuilder.constants.times(),
+    LambdaBuilder.constants.two(),
+    LambdaBuilder.constants.three(),
   ]).build();
   print('    $temp');
   print('  = ${temp.eval(evalType: LambdaEvaluationType.fullReduction)}');
 
   print("3. Evaluate '2 ^ 3' directly to its simplest form: ");
   temp = LambdaBuilder.applyAll([
-    Lambda.constants.power(),
-    Lambda.constants.two(),
-    Lambda.constants.three(),
+    LambdaBuilder.constants.power(),
+    LambdaBuilder.constants.two(),
+    LambdaBuilder.constants.three(),
   ]).build();
   print('    $temp');
   print('  = ${temp.eval(evalType: LambdaEvaluationType.fullReduction)}');
@@ -240,14 +243,15 @@ void _evaluationsByName() {
   // "call-by-name" scheme.
   print("1. Evaluate 'true 1 omega' lazily (call by name): ");
   temp = LambdaBuilder.applyAll([
-    Lambda.constants.lambdaTrue(),
-    Lambda.constants.one(),
-    Lambda.constants.omega(),
+    LambdaBuilder.constants.lambdaTrue(),
+    LambdaBuilder.constants.one(),
+    LambdaBuilder.constants.omega(),
   ]).build();
   print('    $temp');
   print('  = ${temp.eval1(evalType: LambdaEvaluationType.callByName)}');
   print(
-      '  = ${temp.eval1(evalType: LambdaEvaluationType.callByName)!.eval1(evalType: LambdaEvaluationType.callByName)}');
+    '  = ${temp.eval1(evalType: LambdaEvaluationType.callByName)!.eval1(evalType: LambdaEvaluationType.callByName)}',
+  );
   // In contrast, the expression diverges in a "call by value" scheme.
   print("2. Evaluate 'true 1 omega' strictly (call by value): ");
   print('    $temp');
@@ -278,13 +282,13 @@ void _factorial() {
   print('The factorial lamdba expression: ');
   print('    $factorial');
   print('1. Evaluate 0!: ');
-  result = LambdaBuilder.applyAll([factorial, Lambda.constants.zero()])
+  result = LambdaBuilder.applyAll([factorial, LambdaBuilder.constants.zero()])
       .build()
       .eval();
   print('    $result');
   print('  = ${result.toInt()}');
   print('2. Evaluate 3!: ');
-  result = LambdaBuilder.applyAll([factorial, Lambda.constants.three()])
+  result = LambdaBuilder.applyAll([factorial, LambdaBuilder.constants.three()])
       .build()
       .eval();
   print('    $result');

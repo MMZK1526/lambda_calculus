@@ -52,10 +52,10 @@ void main() {
     () {
       expect(
         LambdaBuilder.applyAll([
-          Lambda.constants.test(),
-          Lambda.constants.lambdaFalse(),
-          Lambda.constants.two(),
-          Lambda.constants.one(),
+          LambdaBuilder.constants.test(),
+          LambdaBuilder.constants.lambdaFalse(),
+          LambdaBuilder.constants.two(),
+          LambdaBuilder.constants.one(),
         ]).build().eval(),
         Lambda.constants.one(),
       );
@@ -65,54 +65,54 @@ void main() {
       );
       expect(
         LambdaBuilder.applyAll([
-          Lambda.constants.succ(),
-          Lambda.constants.six(),
+          LambdaBuilder.constants.succ(),
+          LambdaBuilder.constants.six(),
         ]).build().toInt(),
         7,
       );
       expect(
         LambdaBuilder.applyAll([
-          Lambda.constants.plus(),
-          Lambda.constants.two(),
-          Lambda.constants.three(),
+          LambdaBuilder.constants.plus(),
+          LambdaBuilder.constants.two(),
+          LambdaBuilder.constants.three(),
         ]).build().toInt(),
         5,
       );
       expect(
         LambdaBuilder.applyAll([
-          Lambda.constants.times(),
-          Lambda.constants.two(),
-          Lambda.constants.three(),
+          LambdaBuilder.constants.times(),
+          LambdaBuilder.constants.two(),
+          LambdaBuilder.constants.three(),
         ]).build().toInt(),
         6,
       );
       expect(
         LambdaBuilder.applyAll([
-          Lambda.constants.power(),
-          Lambda.constants.two(),
-          Lambda.constants.three(),
+          LambdaBuilder.constants.power(),
+          LambdaBuilder.constants.two(),
+          LambdaBuilder.constants.three(),
         ]).build().toInt(),
         8,
       );
       expect(
         LambdaBuilder.applyAll([
-          Lambda.constants.isZero(),
-          Lambda.constants.two(),
+          LambdaBuilder.constants.isZero(),
+          LambdaBuilder.constants.two(),
         ]).build().eval(),
         Lambda.constants.lambdaFalse(),
       );
       expect(
         LambdaBuilder.applyAll([
-          Lambda.constants.isZero(),
-          Lambda.constants.zero(),
+          LambdaBuilder.constants.isZero(),
+          LambdaBuilder.constants.zero(),
         ]).build().eval(),
         Lambda.constants.lambdaTrue(),
       );
       expect(
         LambdaBuilder.applyAll([
-          Lambda.constants.and(),
-          Lambda.constants.lambdaFalse(),
-          Lambda.constants.omega(),
+          LambdaBuilder.constants.and(),
+          LambdaBuilder.constants.lambdaFalse(),
+          LambdaBuilder.constants.omega(),
         ]).build().eval(evalType: LambdaEvaluationType.callByName),
         Lambda.constants.lambdaFalse(),
       );
