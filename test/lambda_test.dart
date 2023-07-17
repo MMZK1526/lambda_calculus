@@ -2,11 +2,6 @@ import 'package:lambda_calculus/lambda_calculus.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test('Playground', () {
-    final l1 = r'(\x \y \z. x z (y z)) (\a\b a)'.toLambda()!;
-    print(l1.eval(evalType: LambdaEvaluationType.fullReduction));
-  });
-
   test(
     'Clone Test',
     () {
@@ -112,7 +107,7 @@ void main() {
         LambdaBuilder.applyAll([
           LambdaBuilder.constants.and(),
           LambdaBuilder.constants.lambdaFalse(),
-          LambdaBuilder.constants.omega(),
+          Lambda.constants.omega(),
         ]).build().eval(evalType: LambdaEvaluationType.callByName),
         Lambda.constants.lambdaFalse(),
       );
