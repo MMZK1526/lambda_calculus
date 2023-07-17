@@ -48,26 +48,10 @@ class Lambda implements ILambda<Lambda> {
     final lambdaStack = [this];
     final isExp1Stack = [true];
     var param = initialParam;
-    final freeVars = <String>[];
     final boundedVars = <String?>[];
 
     while (lambdaStack.isNotEmpty) {
       if (lambdaStack.last.form == LambdaForm.variable) {
-        if (lambdaStack.last.index == null) {
-          var index = boundedVars.indexOf(lambdaStack.last.name!);
-
-          if (index != -1) {
-            // Bounded variable.
-            lambdaStack.last.index = index;
-          } else if ((index = freeVars.indexOf(lambdaStack.last.name!)) != -1) {
-            // Free variable (appeared before).
-            lambdaStack.last.index = index + boundedVars.length;
-          } else {
-            // Free variable (first appearance).
-            lambdaStack.last.index = freeVars.length + boundedVars.length;
-            freeVars.add(lambdaStack.last.name!);
-          }
-        }
         param = onVar?.call(
               lambdaStack.last,
               param,
@@ -120,37 +104,11 @@ class Lambda implements ILambda<Lambda> {
     final lambdaStack = [this];
     final resultStack = <Lambda>[Lambda(form: LambdaForm.dummy)];
     final isExp1Stack = [true];
-    final freeVars = <String>[];
     final boundedVars = <String?>[];
     var param = initialParam;
 
     while (lambdaStack.isNotEmpty) {
       if (lambdaStack.last.form == LambdaForm.variable) {
-        if (lambdaStack.last.index == null) {
-          var index = boundedVars.indexOf(lambdaStack.last.name!);
-
-          if (index != -1) {
-            // Bounded variable.
-            lambdaStack.last.index = index;
-          } else if ((index = freeVars.indexOf(lambdaStack.last.name!)) != -1) {
-            // Free variable (appeared before).
-            lambdaStack.last.index = index + boundedVars.length;
-          } else {
-            // Free variable (first appearance).
-            lambdaStack.last.index = freeVars.length + boundedVars.length;
-            freeVars.add(lambdaStack.last.name!);
-          }
-        } else if (lambdaStack.last.name == null) {
-          var index = lambdaStack.last.index!;
-
-          if (index < boundedVars.length) {
-            // Bounded variable.
-            lambdaStack.last.name = boundedVars[index];
-          } else if (index - boundedVars.length < freeVars.length) {
-            lambdaStack.last.name = freeVars[index - boundedVars.length];
-          }
-        }
-
         resultStack.last = onVar(lambdaStack.last, param, boundedVars.length);
         while (true) {
           final cur = lambdaStack.removeLast();
