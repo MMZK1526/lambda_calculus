@@ -1,15 +1,13 @@
 import 'package:lambda_calculus/src/lambda_form.dart';
 
 abstract class ILambda<T> {
-  ILambda({required this.form});
+  LambdaForm get form;
 
-  LambdaForm form;
+  String? get name;
 
-  String? name;
+  int? get index;
 
-  int? index;
+  T? get exp1;
 
-  T? exp1;
-
-  T? exp2;
+  T? get exp2;
 }

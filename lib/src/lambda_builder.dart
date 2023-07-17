@@ -111,7 +111,7 @@ class LambdaBuilder implements ILambda<LambdaBuilder> {
   }
 
   Lambda build() {
-    final lambdaStack = <ILambda>[this];
+    final lambdaStack = [this];
     final resultStack = <Lambda>[Lambda(form: LambdaForm.dummy)];
     final isExp1Stack = [true];
     final freeVars = <String>[];
