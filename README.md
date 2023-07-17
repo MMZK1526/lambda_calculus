@@ -56,6 +56,3 @@ print(yCombinator.findType()); // null
 See [here](example/example.dart) for more examples.
 
 TODO: Improve the API documentation.
-
-## Known Issues
-1. Lambdas with named variables constructed by constructors sometime behave weirdly. For now please only use lambdas parsed from strings.
