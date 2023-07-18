@@ -15,7 +15,7 @@ import 'package:lambda_calculus/src/lambda_parser.dart';
 /// Lambda expressions are usually generated either directly from parsing a
 /// string or via [LambdaBuilder].
 ///
-/// See the documentation for [ToLambdaExtension] and [LamdbaBuilder] for more
+/// See the documentation for [ToLambdaExtension] and [LambdaBuilder] for more
 /// information on how to create lambda expressions.
 class Lambda implements ILambda<Lambda> {
   Lambda({
@@ -362,7 +362,7 @@ class Lambda implements ILambda<Lambda> {
 
   /// Returns the number of free variables in the lambda expression.
   ///
-  /// If the `isDistinct` parameter is set to true, count for the number of
+  /// If the `countDistinct` parameter is set to true, count for the number of
   /// distinct free variables; otherwise count for the total appearances.
   int freeCount({bool countDistinct = false}) =>
       fold<int, Tuple2<int, Set<int>>>(

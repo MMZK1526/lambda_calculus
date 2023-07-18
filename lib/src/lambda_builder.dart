@@ -3,7 +3,28 @@ import 'package:lambda_calculus/src/lambda_form.dart';
 import 'package:lambda_calculus/src/lambda_interface.dart';
 import 'package:lambda_calculus/src/lambda.dart';
 
-/// The class representing lambda expressions.
+/// A builder for [Lambda].
+///
+/// It provides some convenient methods for constructing lambda expressions.
+/// Do not forget to call `build()` to get the final result.
+///
+/// The following is a simple example that constructs the "false" term
+/// (`λx.λy.y`):
+/// ```dart
+/// LambdaBuilder.abstract(
+///   LambdaBuilder.abstract(LambdaBuilder.fromVar(name: 'y'), 'y'),
+///   'x',
+/// ).build();
+/// ```
+///
+/// See [here](https://github.com/MMZK1526/lambda_calculus/blob/master/example/example.dart)
+/// for more examples.
+///
+/// It is safer to use this builder rather than the constructors in [Lambda]
+/// because in [Lambda] the [index] for variables are not optional, thus it is
+/// easy to make mistakes. Here however, you can use either [index] or [name]
+/// to construct a variable, and the class will eventually do the necessary
+/// calculation for the De Bruijn index.
 class LambdaBuilder implements ILambda<LambdaBuilder> {
   LambdaBuilder({
     required this.form,
@@ -38,20 +59,24 @@ class LambdaBuilder implements ILambda<LambdaBuilder> {
   @override
   LambdaBuilder? exp2;
 
+  /// Access the [LambdaBuilderConstants] instance which provides common
+  /// constants and combinators.
   static final LambdaBuilderConstants constants = LambdaBuilderConstants();
 
-  static LambdaBuilder _fromILambda(ILambda lambda) {
-    if (lambda.runtimeType == LambdaBuilder) {
-      return lambda as LambdaBuilder;
-    }
+  @override
+  int get hashCode => build().toString().hashCode;
 
-    return LambdaBuilder(
-      form: lambda.form,
-      index: lambda.index,
-      name: lambda.name,
-      exp1: lambda.exp1 != null ? _fromILambda(lambda.exp1!) : null,
-      exp2: lambda.exp2 != null ? _fromILambda(lambda.exp2!) : null,
-    );
+  /// The equality operator.
+  ///
+  /// Returns true iff the two [LambdaBuilder]s are syntactically identical up to alpha
+  /// renaming.
+  ///
+  /// Avoids recursion.
+  @override
+  bool operator ==(Object other) {
+    if (other.runtimeType != LambdaBuilder) return false;
+
+    return build() == (other as LambdaBuilder).build();
   }
 
   /// Construct a lambda variable with the given De Bruijn index and name. At
@@ -70,7 +95,8 @@ class LambdaBuilder implements ILambda<LambdaBuilder> {
         name: name,
       );
 
-  /// Apply a list of lambda expressions together from left to right.
+  /// Apply a list of lambda expressions together with default (left-to-right)
+  /// associativity.
   static LambdaBuilder applyAll(List<ILambda> lambdas) {
     if (lambdas.isEmpty) {
       return LambdaBuilder(
@@ -88,7 +114,8 @@ class LambdaBuilder implements ILambda<LambdaBuilder> {
         );
   }
 
-  /// Apply a list of lambda expressions together from right to left.
+  /// Apply a list of lambda expressions together with right-to-left
+  /// associativity.
   static LambdaBuilder applyAllReversed(List<LambdaBuilder> lambdas) {
     if (lambdas.isEmpty) {
       return LambdaBuilder(
@@ -113,6 +140,7 @@ class LambdaBuilder implements ILambda<LambdaBuilder> {
     return applyAllReversedHelper(List.of(lambdas));
   }
 
+  /// Build the [LambdaBuilder] into a [Lambda].
   Lambda build() {
     final lambdaStack = [this];
     final resultStack = <Lambda>[Lambda(form: LambdaForm.dummy)];
@@ -190,19 +218,17 @@ class LambdaBuilder implements ILambda<LambdaBuilder> {
     return resultStack.first;
   }
 
-  @override
-  int get hashCode => build().toString().hashCode;
+  static LambdaBuilder _fromILambda(ILambda lambda) {
+    if (lambda.runtimeType == LambdaBuilder) {
+      return lambda as LambdaBuilder;
+    }
 
-  /// The equality operator.
-  ///
-  /// Returns true iff the two [LambdaBuilder]s are syntactically identical up to alpha
-  /// renaming.
-  ///
-  /// Avoids recursion.
-  @override
-  bool operator ==(Object other) {
-    if (other.runtimeType != LambdaBuilder) return false;
-
-    return build() == (other as LambdaBuilder).build();
+    return LambdaBuilder(
+      form: lambda.form,
+      index: lambda.index,
+      name: lambda.name,
+      exp1: lambda.exp1 != null ? _fromILambda(lambda.exp1!) : null,
+      exp2: lambda.exp2 != null ? _fromILambda(lambda.exp2!) : null,
+    );
   }
 }
