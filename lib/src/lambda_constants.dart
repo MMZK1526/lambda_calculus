@@ -4,7 +4,9 @@ import 'package:lambda_calculus/src/lambda_conversion.dart';
 import 'package:lambda_calculus/src/lambda_form.dart';
 import 'package:lambda_calculus/src/lambda_interface.dart';
 
-/// Common lambda expressions.
+/// Common lambda terms and combinators, but in the [LambdaBuilder] form.
+///
+/// They are accessible via [LambdaBuilder.constants].
 class LambdaBuilderConstants implements ILambdaConstants<LambdaBuilder> {
   @override
   LambdaBuilder identity() => LambdaBuilder.abstract(
@@ -322,6 +324,9 @@ class LambdaBuilderConstants implements ILambdaConstants<LambdaBuilder> {
       );
 }
 
+/// Common lambda terms and combinators.
+///
+/// They are accessible via [Lambda.constants].
 class LambdaConstants implements ILambdaConstants<Lambda> {
   @override
   Lambda identity() => LambdaBuilderConstants().identity().build();
