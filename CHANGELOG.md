@@ -1,3 +1,7 @@
+## 1.1.1
+
+- Better documentation.
+
 ## 1.1.0
 
 - Stop allowing constructing `Lambda` directly, instead, use `LambdaBuilder`.
