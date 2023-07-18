@@ -1,3 +1,7 @@
+## 1.1.2 (unreleased)
+
+- Fix typos in documentation.
+
 ## 1.1.1
 
 - Better documentation.

@@ -34,7 +34,7 @@ final iiyokoiyo = 114514.toChurchNumber(); // I wouldn't try to print out this o
 // Both `LambdaBuilder` and `Lambda` provides a number of constants and
 // combinators for convenience.
 final twoTimesThree = LambdaBuilder.applyAll([
-  LambdaBuilder.constants.lambdaTimes,
+  LambdaBuilder.constants.lambdaTimes(),
   LambdaBuilder.lambdaTwo,
   LambdaBuilder.lambdaThree,
 ]).build();
