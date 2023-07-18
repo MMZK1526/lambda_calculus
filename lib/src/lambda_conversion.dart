@@ -5,12 +5,15 @@ import 'package:lambda_calculus/src/lambda_evaluator.dart';
 import 'package:lambda_calculus/src/lambda.dart';
 import 'package:lambda_calculus/src/lambda_form.dart';
 
+/// An extension that converts [int] to [Lambda] using the Church natural number
+/// encoding.
 extension LambdaConversionIntExtension on int {
   /// Convert a natural number to church number.
   ///
   /// Negative numbers treated as zero.
   Lambda toChurchNumber() => toChurchNumberBuilder().build();
 
+  /// Similar to [toChurchNumber], but returns a [LambdaBuilder] instead.
   LambdaBuilder toChurchNumberBuilder() {
     var n = max(this, 0);
 
@@ -27,39 +30,25 @@ extension LambdaConversionIntExtension on int {
   }
 }
 
+/// An extension that converts [Lambda] to [int] using the Church natural number
+/// encoding.
+///
+/// Note that this extension performs full reduction on the lambda expression
+/// before converting it to an integer. And due to undecidability of the
+/// lambda calculus, this operation may not terminate, and there is no way to
+/// tell in general.
 extension LambdaConversionExtension on Lambda {
-  /// The succ (+1) expression.
-  static final lambdaSucc = LambdaBuilder.abstract(
-    LambdaBuilder.abstract(
-      LambdaBuilder.abstract(
-        LambdaBuilder(
-          form: LambdaForm.application,
-          exp1: LambdaBuilder.fromVar(name: 'y'),
-          exp2: LambdaBuilder.applyAll([
-            LambdaBuilder.fromVar(name: 'x'),
-            LambdaBuilder.fromVar(name: 'y'),
-            LambdaBuilder.fromVar(name: 'z'),
-          ]),
-        ),
-        'z',
-      ),
-      'y',
-    ),
-    'x',
-  );
-
   /// Convert the lambda expression that is a church number to a natural number.
   ///
   /// Returns -1 if the expression is not behaviourally equivalent to a church
   /// number.
   int toInt() {
     try {
-      var temp =
-          LambdaBuilder.applyAll([this, lambdaSucc, 0.toChurchNumberBuilder()])
-              .build()
-              .eval(evalType: LambdaEvaluationType.fullReduction)
-              .exp1!
-              .exp1!;
+      var temp = LambdaBuilder.applyAll([
+        this,
+        LambdaBuilder.constants.succ(),
+        0.toChurchNumberBuilder(),
+      ]).build().eval(evalType: LambdaEvaluationType.fullReduction).exp1!.exp1!;
       var num = 0;
       while (temp.form == LambdaForm.application) {
         num++;
