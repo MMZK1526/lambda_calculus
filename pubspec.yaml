@@ -1,8 +1,7 @@
 name: lambda_calculus
 description:
   A library for lambda calculus. It supports parsing and evaluating lambda terms
-  with different strategies, with some built-in Church encodings and
-  combinators. It also has preliminary support for type inference.
+  with different strategies. It also has preliminary support for type inference.
 version: 1.1.1
 repository: https://github.com/MMZK1526/lambda_calculus
 
