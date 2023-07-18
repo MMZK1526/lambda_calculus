@@ -35,8 +35,8 @@ final iiyokoiyo = 114514.toChurchNumber(); // I wouldn't try to print out this o
 // combinators for convenience.
 final twoTimesThree = LambdaBuilder.applyAll([
   LambdaBuilder.constants.lambdaTimes(),
-  LambdaBuilder.lambdaTwo,
-  LambdaBuilder.lambdaThree,
+  2.toChurchNumberBuilder(),
+  3.toChurchNumberBuilder(),
 ]).build();
 final evalOneStep = twoTimesThree.eval1();
 // Note that the 'eval' function does not terminate if the term does not have
