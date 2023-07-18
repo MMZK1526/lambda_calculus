@@ -6,3 +6,4 @@ lib/.DS_Store
 test/.DS_Store
 build/
 .dart_tool/
+doc/
