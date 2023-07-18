@@ -1,9 +1,22 @@
 import 'package:dartz/dartz.dart';
+import 'package:lambda_calculus/src/lambda_builder.dart';
 import 'package:lambda_calculus/src/lambda_constants.dart';
 import 'package:lambda_calculus/src/lambda_form.dart';
 import 'package:lambda_calculus/src/lambda_interface.dart';
+import 'package:lambda_calculus/src/lambda_parser.dart';
 
 /// The class representing lambda expressions.
+///
+/// A lambda expression can have one of the three forms:
+/// - Variable: `x`
+/// - Abstraction: `λx.M`
+/// - Application: `(M N)`
+///
+/// Lambda expressions are usually generated either directly from parsing a
+/// string or via [LambdaBuilder].
+///
+/// See the documentation for [ToLambdaExtension] and [LamdbaBuilder] for more
+/// information on how to create lambda expressions.
 class Lambda implements ILambda<Lambda> {
   Lambda({
     required this.form,
@@ -36,17 +49,138 @@ class Lambda implements ILambda<Lambda> {
   @override
   Lambda? exp2;
 
+  /// Access the [LambdaConstants] instance which provides common constants and
+  /// combinators.
   static final LambdaConstants constants = LambdaConstants();
 
+  @override
+  int get hashCode => toString().hashCode;
+
+  /// The equality operator.
+  ///
+  /// Returns true iff the two [Lambda]s are syntactically identical up to alpha
+  /// renaming.
+  ///
+  /// Avoids recursion.
+  @override
+  bool operator ==(Object other) {
+    if (other.runtimeType != Lambda) return false;
+
+    return toStringNameless() == (other as Lambda).toStringNameless();
+  }
+
+  /// A string representation of the [Lambda] without redundant brackets.
+  ///
+  /// Avoids recursion.
+  @override
+  String toString() {
+    if (form == LambdaForm.dummy) return '[DUMMY]';
+
+    final sb = StringBuffer();
+    bool? isLeftParen = true;
+    fmap<List<bool>>(
+      initialParam: [false],
+      onVar: (lambda, _, depth) {
+        final curDepth = depth - lambda.index!;
+        if (isLeftParen != true) {
+          sb.write(' ');
+        }
+        if (lambda.name != null) {
+          sb.write(lambda.name);
+        } else if (curDepth > 0) {
+          sb.write('_x$curDepth');
+        } else {
+          sb.write('_y${1 - curDepth}');
+        }
+        isLeftParen = null;
+        return lambda;
+      },
+      onAbsEnter: (lambda, useBraces, depth) {
+        if ((isLeftParen != true && useBraces!.last) ||
+            (isLeftParen == false && !useBraces!.last)) {
+          sb.write(' ');
+        }
+        if (useBraces!.last) {
+          sb.write('(');
+          isLeftParen = true;
+        }
+        if (lambda.name != null) {
+          sb.write('λ${lambda.name}.');
+        } else if (depth > 0) {
+          sb.write('λ_x$depth.');
+        } else {
+          sb.write('λ_y${1 - depth}.');
+        }
+        useBraces.add(false);
+        isLeftParen = false;
+        return useBraces;
+      },
+      onAbsExit: (lambda, useBraces, depth) {
+        useBraces!.removeLast();
+        if (useBraces.last) {
+          sb.write(')');
+          isLeftParen = false;
+        }
+        return useBraces;
+      },
+      onAppEnter: (lambda, useBraces, depth, isLeft) {
+        if (useBraces!.last ||
+            !isLeft && lambda.form == LambdaForm.application) {
+          if (isLeftParen != true) sb.write(' ');
+          sb.write('(');
+          isLeftParen = true;
+        }
+        useBraces.add(lambda.form == LambdaForm.abstraction);
+        return useBraces;
+      },
+      onAppExit: (lambda, useBraces, depth, isLeft) {
+        useBraces!.removeLast();
+        if (useBraces.last ||
+            !isLeft && lambda.form == LambdaForm.application) {
+          sb.write(')');
+          isLeftParen = false;
+        }
+        return useBraces;
+      },
+    );
+
+    return sb.toString();
+  }
+
   /// A higher-order function that iterates on the [Lambda], returning a value.
+  ///
+  /// It maintains an internal parameter of type `T` and calls the appropriate
+  /// callback function for each sub-expression in the [Lambda], passing the
+  /// parameter to the callback function and updating the parameter with the
+  /// return value of the callback function.
+  ///
+  /// These callbacks should not modify the [Lambda] itself.
+  ///
+  /// In detail, the callback functions are called by the following rules:
+  /// - If the form is [LambdaForm.variable], call [onVar]. It takes the current
+  ///   Lambda expression (i.e. the variable itself), the current parameter, and
+  ///   depth of the variable (i.e. the number of abstractions that the variable
+  ///   is bounded by) as arguments, and returns a new value of type `T`.
+  /// - If the form is [LambdaForm.application], call [onAppEnter] before
+  ///   visiting the sub-expression, and call [onAppExit] after visiting the
+  ///   sub-expression. Both callbacks take the current parameter and depth as
+  ///   arguments and return a new value of type `T`. Note that it visits both
+  ///   sub-expressions from left to right.
+  /// - If the form is [LambdaForm.abstraction], call [onAbsEnter] before
+  ///   visiting the sub-expression, and call [onAbsExit] after visiting the
+  ///   sub-expression. Both callbacks take the current parameter and depth as
+  ///   arguments and return a new value of type `T`.
+  ///
+  /// Finally, it applies the [select] function to the parameter and returns the
+  /// result.
   R fold<R, T>({
     required T initialParam,
-    required R Function(T) select,
-    T Function(Lambda, T, int)? onVar,
-    T Function(T, int)? onAbsEnter,
-    T Function(T, int)? onAbsExit,
-    T Function(T, int)? onAppEnter,
-    T Function(T, int)? onAppExit,
+    required R Function(T finalParam) select,
+    T Function(Lambda varLambda, T param, int depth)? onVar,
+    T Function(T param, int depth)? onAbsEnter,
+    T Function(T param, int depth)? onAbsExit,
+    T Function(T param, int depth)? onAppEnter,
+    T Function(T param, int depth)? onAppExit,
   }) {
     final lambdaStack = [this];
     final isExp1Stack = [true];
@@ -96,13 +230,41 @@ class Lambda implements ILambda<Lambda> {
 
   /// A higher-order function that turns recursion on the [Lambda] to iteration,
   /// returning another [Lambda].
+  ///
+  /// Note that it doesn't simplify the shape of the original [Lambda]. In other
+  /// words, each variable in the original [Lambda] maps to a [Lambda] term on
+  /// its own.
+  ///
+  /// These callbacks should not modify the [Lambda] itself.
+  ///
+  /// It maintains an internal parameter of type `T` and calls the appropriate
+  /// callback function for each sub-expression in the [Lambda], passing the
+  /// parameter to the callback function and updating the parameter with the
+  /// return value of the callback function.
+  ///
+  /// In detail, the callback functions are called by the following rules:
+  /// - If the form is [LambdaForm.variable], call [onVar]. It takes the current
+  ///   Lambda expression (i.e. the variable itself), the current parameter, and
+  ///   depth of the variable (i.e. the number of abstractions that the variable
+  ///   is bounded by) as arguments, and returns a new [Lambda] as replacement.
+  ///   Note that the original [Lambda] itself is not modified.
+  /// - If the form is [LambdaForm.application], call [onAppEnter] before
+  ///   visiting the sub-expression, and call [onAppExit] after visiting the
+  ///   sub-expression. Both callbacks take the current parameter, the depth,
+  ///   and a boolean value indicating whether the sub-expression is the left
+  ///   sub-expression or not as arguments, and return a new value as the next
+  ///   parameter. Note that it visits both sub-expressions from left to right.
+  /// - If the form is [LambdaForm.abstraction], call [onAbsEnter] before
+  ///   visiting the sub-expression, and call [onAbsExit] after visiting the
+  ///   sub-expression. Both callbacks take the current parameter and the depth
+  ///   as arguments, and return a new value as the next parameter.
   Lambda fmap<T>({
     required Lambda Function(Lambda, T? param, int depth) onVar,
     T? initialParam,
-    T? Function(Lambda, T? param, int depth)? onAbsEnter,
-    T? Function(Lambda, T? param, int depth)? onAbsExit,
-    T? Function(Lambda, T? param, int depth, bool isLeft)? onAppEnter,
-    T? Function(Lambda, T? param, int depth, bool isLeft)? onAppExit,
+    T? Function(Lambda varLambda, T? param, int depth)? onAbsEnter,
+    T? Function(Lambda varLambda, T? param, int depth)? onAbsExit,
+    T? Function(Lambda varLambda, T? param, int depth, bool isLeft)? onAppEnter,
+    T? Function(Lambda varLambda, T? param, int depth, bool isLeft)? onAppExit,
   }) {
     final lambdaStack = [this];
     final resultStack = <Lambda>[Lambda(form: LambdaForm.dummy)];
@@ -200,12 +362,10 @@ class Lambda implements ILambda<Lambda> {
 
   /// Returns the number of free variables in the lambda expression.
   ///
-  /// If the 'isDistinct' parameter is set to true, count for the number of
+  /// If the `isDistinct` parameter is set to true, count for the number of
   /// distinct free variables; otherwise count for the total appearances.
   int freeCount({bool countDistinct = false}) =>
       fold<int, Tuple2<int, Set<int>>>(
-        // We need to make the map mutable, thus not const.
-        // ignore: prefer_const_constructors
         initialParam: Tuple2(0, {}),
         select: (tuple2) => tuple2.value1,
         onVar: countDistinct
@@ -228,8 +388,8 @@ class Lambda implements ILambda<Lambda> {
       );
 
   /// A string representation of the [Lambda] without redundant brackets and
-  /// ignores custom names (so that all variables are in the form of x{n} or
-  /// y{n}).
+  /// ignores custom names (so that all variables are in the form of `x{n}` or
+  /// `y{n}`).
   ///
   /// Avoids recursion.
   String toStringNameless() {
@@ -262,100 +422,6 @@ class Lambda implements ILambda<Lambda> {
           isLeftParen = true;
         }
         if (depth > 0) {
-          sb.write('λ_x$depth.');
-        } else {
-          sb.write('λ_y${1 - depth}.');
-        }
-        useBraces.add(false);
-        isLeftParen = false;
-        return useBraces;
-      },
-      onAbsExit: (lambda, useBraces, depth) {
-        useBraces!.removeLast();
-        if (useBraces.last) {
-          sb.write(')');
-          isLeftParen = false;
-        }
-        return useBraces;
-      },
-      onAppEnter: (lambda, useBraces, depth, isLeft) {
-        if (useBraces!.last ||
-            !isLeft && lambda.form == LambdaForm.application) {
-          if (isLeftParen != true) sb.write(' ');
-          sb.write('(');
-          isLeftParen = true;
-        }
-        useBraces.add(lambda.form == LambdaForm.abstraction);
-        return useBraces;
-      },
-      onAppExit: (lambda, useBraces, depth, isLeft) {
-        useBraces!.removeLast();
-        if (useBraces.last ||
-            !isLeft && lambda.form == LambdaForm.application) {
-          sb.write(')');
-          isLeftParen = false;
-        }
-        return useBraces;
-      },
-    );
-
-    return sb.toString();
-  }
-
-  @override
-  int get hashCode => toString().hashCode;
-
-  /// The equality operator.
-  ///
-  /// Returns true iff the two [Lambda]s are syntactically identical up to alpha
-  /// renaming.
-  ///
-  /// Avoids recursion.
-  @override
-  bool operator ==(Object other) {
-    if (other.runtimeType != Lambda) return false;
-
-    return toStringNameless() == (other as Lambda).toStringNameless();
-  }
-
-  /// A string representation of the [Lambda] without redundant brackets.
-  ///
-  /// Avoids recursion.
-  @override
-  String toString() {
-    if (form == LambdaForm.dummy) return '[DUMMY]';
-
-    final sb = StringBuffer();
-    bool? isLeftParen = true;
-    fmap<List<bool>>(
-      initialParam: [false],
-      onVar: (lambda, _, depth) {
-        final curDepth = depth - lambda.index!;
-        if (isLeftParen != true) {
-          sb.write(' ');
-        }
-        if (lambda.name != null) {
-          sb.write(lambda.name);
-        } else if (curDepth > 0) {
-          sb.write('_x$curDepth');
-        } else {
-          sb.write('_y${1 - curDepth}');
-        }
-        isLeftParen = null;
-        return lambda;
-      },
-      onAbsEnter: (lambda, useBraces, depth) {
-        if ((isLeftParen != true && useBraces!.last) ||
-            (isLeftParen == false && !useBraces!.last)) {
-          sb.write(' ');
-        }
-        if (useBraces!.last) {
-          sb.write('(');
-          isLeftParen = true;
-        }
-        if (lambda.name != null) {
-          sb.write('λ${lambda.name}.');
-        } else if (depth > 0) {
           sb.write('λ_x$depth.');
         } else {
           sb.write('λ_y${1 - depth}.');
