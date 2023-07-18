@@ -1,17 +1,29 @@
+import 'package:lambda_calculus/src/lambda.dart';
 import 'package:lambda_calculus/src/lambda_form.dart';
 
+/// An interface for [Lambda]-ish expressions.
 abstract class ILambda<T> {
+  /// The form of the lambda expression.
   LambdaForm get form;
 
+  /// The name of the variable introduced; only makes sense if the form is
+  /// [LambdaForm.variable] or [LambdaForm.abstraction].
   String? get name;
 
+  /// The De Bruijn index of the variable introduced; only makes sense if the
+  /// form is [LambdaForm.variable].
   int? get index;
 
+  /// The "first" sub-expression. If the form is [LambdaForm.abstraction], it
+  /// the "function body", otherwise it is the "function" `M` in `(M N)`.
   T? get exp1;
 
+  /// The "second" sub-expression. If the form is [LambdaForm.application], it
+  /// the "argument".
   T? get exp2;
 }
 
+/// An interface for common constants/combinators in lambda calculus.
 abstract class ILambdaConstants<T> {
   /// The identity expression.
   T identity();
