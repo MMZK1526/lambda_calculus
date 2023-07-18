@@ -1,17 +1,21 @@
 import 'package:lambda_calculus/src/lambda.dart';
 import 'package:lambda_calculus/src/lambda_form.dart';
 
+/// The evaluation strategies for lambda calculus.
+///
+/// It provides three strategies:
+/// - [fullReduction]: Call by name, attempts to reduce everything.
+/// - [callByName]: Call by name, does not reduce within abstraction. Usually
+///   corresponds to "lazy evaluation".
+/// - [callByValue]: Call by value, does not reduce within abstraction. Usually
+///   corresponds to "eager evaluation".
 enum LambdaEvaluationType {
-  /// Call by name, attempts to reduce everything.
   fullReduction,
-
-  /// Call by name, does not reduce within abstraction.
   callByName,
-
-  /// Call by value, does not reduce within abstraction.
   callByValue,
 }
 
+/// Extension for evaluating [Lambda] expressions.
 extension LambdaEvaluationExtension on Lambda {
   Lambda _shift(int amount, int cutoff) => fmap<int>(
         initialParam: 0,
@@ -66,8 +70,7 @@ extension LambdaEvaluationExtension on Lambda {
     return prev;
   }
 
-  /// Evaluate for one step; throws [UnimplementedError] when the lambda
-  /// expression is not reduceable.
+  /// Evaluate for one step; returns `null` if no further reduction can be done.
   ///
   /// Avoids recursion.
   Lambda? eval1({

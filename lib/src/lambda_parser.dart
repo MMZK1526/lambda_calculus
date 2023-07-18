@@ -366,6 +366,7 @@ Lambda? _lambdaParser(List<LambdaToken> tokens) {
   return lambdaStack.last;
 }
 
+/// TODO: Syntax explanation.
 extension ToLambdaExtension on String {
   Lambda? toLambda() {
     final tokens = _lambdaLexer(this);
