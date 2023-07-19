@@ -146,14 +146,48 @@ class LambdaType {
       ..addAll(s2..removeWhere((key, _) => s1.containsKey(key)));
   }
 
-  // TODO: Avoid recursion and omit redundant parenthesis
+  /// Print out the type without redundant parentheses.
   @override
   String toString() {
-    if (isArrow) {
-      return "(${type1!} -> ${type2!})";
-    } else {
-      return "t${varIndex!}";
+    final sb = StringBuffer();
+    final typeStack = [this];
+    final useBracesStack = [false];
+    final isExp1Stack = [true];
+
+    while (typeStack.isNotEmpty) {
+      final cur = typeStack.last;
+      if (typeStack.last.isArrow) {
+        if (useBracesStack.last) {
+          sb.write("(");
+        }
+        typeStack.add(cur.type1!);
+        useBracesStack.add(cur.type1!.isArrow);
+        isExp1Stack.add(true);
+      } else {
+        sb.write("t${cur.varIndex!}");
+        while (true) {
+          typeStack.removeLast();
+          if (typeStack.isEmpty) {
+            break;
+          }
+          if (isExp1Stack.last) {
+            isExp1Stack.last = false;
+            useBracesStack.removeLast();
+            sb.write(" -> ");
+            typeStack.add(typeStack.last.type2!);
+            useBracesStack.add(false);
+            break;
+          }
+          isExp1Stack.removeLast();
+          useBracesStack.removeLast();
+          if (useBracesStack.last) {
+            sb.write(")");
+          }
+        }
+      }
     }
+
+    return sb.toString();
   }
 
   // TODO: Avoid recursion

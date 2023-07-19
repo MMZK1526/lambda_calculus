@@ -277,7 +277,9 @@ class Lambda implements ILambda<Lambda> {
         resultStack.last = onVar(lambdaStack.last, param, boundedVars.length);
         while (true) {
           final cur = lambdaStack.removeLast();
-          if (lambdaStack.isEmpty) break;
+          if (lambdaStack.isEmpty) {
+            break;
+          }
           var tempLambda = resultStack.removeLast();
           if (resultStack.last.form == LambdaForm.abstraction) {
             resultStack.last.exp1 = tempLambda;
@@ -286,7 +288,6 @@ class Lambda implements ILambda<Lambda> {
             param = onAbsExit?.call(cur, param, boundedVars.length) ?? param;
           } else if (isExp1Stack.last) {
             resultStack.last.exp1 = tempLambda;
-
             isExp1Stack.last = false;
             param = onAppExit?.call(
                   cur,
@@ -412,7 +413,7 @@ class Lambda implements ILambda<Lambda> {
         isLeftParen = null;
         return lambda;
       },
-      onAbsEnter: (lambda, useBraces, depth) {
+      onAbsEnter: (_, useBraces, depth) {
         if ((isLeftParen != true && useBraces!.last) ||
             (isLeftParen == false && !useBraces!.last)) {
           sb.write(' ');
@@ -430,7 +431,7 @@ class Lambda implements ILambda<Lambda> {
         isLeftParen = false;
         return useBraces;
       },
-      onAbsExit: (lambda, useBraces, depth) {
+      onAbsExit: (_, useBraces, depth) {
         useBraces!.removeLast();
         if (useBraces.last) {
           sb.write(')');
