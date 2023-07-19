@@ -150,11 +150,24 @@ class LambdaType {
   LambdaType _clean() {
     final indexMap = <int, int>{};
     // return this;
-    return fmap<void>(onVar: (lambdaType, _) => lambdaType);
+    return fmap<Solo<int>>(
+      onVar: (lambdaType, freshIndex) {
+        final newIndex = indexMap.putIfAbsent(
+          lambdaType.varIndex!,
+          () {
+            final index = freshIndex!.value;
+            freshIndex.value += 1;
+            return index;
+          },
+        );
+        return LambdaType(isArrow: false, varIndex: newIndex);
+      },
+      initialParam: Solo(1),
+    );
   }
 
   LambdaType fmap<T>({
-    required LambdaType Function(LambdaType, T? param) onVar,
+    required LambdaType Function(LambdaType varLambdaType, T? param) onVar,
     T? initialParam,
     T? Function(T? param)? onArrowEnter,
     T? Function(T? param)? onArrowExit,
@@ -171,7 +184,7 @@ class LambdaType {
         resultStack.add(onVar(cur.second, param));
       } else if (cur.first) {
         cur.first = false;
-        param = onArrowEnter?.call(param);
+        param = onArrowEnter?.call(param) ?? param;
         typeStack.add(Pair(true, cur.second.type2!));
         typeStack.add(Pair(true, cur.second.type1!));
       } else {
@@ -183,7 +196,7 @@ class LambdaType {
           type1: type1,
           type2: type2,
         ));
-        param = onArrowExit?.call(param);
+        param = onArrowExit?.call(param) ?? param;
       }
     }
 

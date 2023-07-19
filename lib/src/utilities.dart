@@ -1,3 +1,19 @@
+/// Generic mutabl solo class.
+class Solo<T> {
+  T value;
+
+  Solo(this.value);
+
+  @override
+  int get hashCode => value.hashCode;
+
+  @override
+  bool operator ==(Object other) => other is Solo<T> && value == other.value;
+
+  @override
+  String toString() => '$value';
+}
+
 /// Generic mutable pair class.
 class Pair<T1, T2> {
   T1 first;
