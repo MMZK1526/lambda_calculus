@@ -235,8 +235,6 @@ class Lambda implements ILambda<Lambda> {
   /// words, each variable in the original [Lambda] maps to a [Lambda] term on
   /// its own.
   ///
-  /// These callbacks should not modify the [Lambda] itself.
-  ///
   /// It maintains an internal parameter of type `T` and calls the appropriate
   /// callback function for each sub-expression in the [Lambda], passing the
   /// parameter to the callback function and updating the parameter with the
@@ -259,15 +257,15 @@ class Lambda implements ILambda<Lambda> {
   ///   sub-expression. Both callbacks take the current parameter and the depth
   ///   as arguments, and return a new value as the next parameter.
   Lambda fmap<T>({
-    required Lambda Function(Lambda, T? param, int depth) onVar,
+    required Lambda Function(Lambda varLambda, T? param, int depth) onVar,
     T? initialParam,
-    T? Function(Lambda varLambda, T? param, int depth)? onAbsEnter,
-    T? Function(Lambda varLambda, T? param, int depth)? onAbsExit,
-    T? Function(Lambda varLambda, T? param, int depth, bool isLeft)? onAppEnter,
-    T? Function(Lambda varLambda, T? param, int depth, bool isLeft)? onAppExit,
+    T? Function(Lambda lambda, T? param, int depth)? onAbsEnter,
+    T? Function(Lambda lambda, T? param, int depth)? onAbsExit,
+    T? Function(Lambda lambda, T? param, int depth, bool isLeft)? onAppEnter,
+    T? Function(Lambda lambda, T? param, int depth, bool isLeft)? onAppExit,
   }) {
     final lambdaStack = [this];
-    final resultStack = <Lambda>[Lambda(form: LambdaForm.dummy)];
+    final resultStack = [Lambda(form: LambdaForm.dummy)];
     final isExp1Stack = [true];
     final boundedVars = <String?>[];
     var param = initialParam;

@@ -3,6 +3,7 @@ import 'dart:collection';
 import 'package:collection/collection.dart';
 import 'package:lambda_calculus/src/lambda.dart';
 import 'package:lambda_calculus/src/lambda_form.dart';
+import 'package:lambda_calculus/src/utilities.dart';
 
 extension LamdbaTypeExtension on Lambda {
   LambdaType? findType() {
@@ -116,7 +117,7 @@ extension LamdbaTypeExtension on Lambda {
       ),
       this,
       [[]],
-    )?.value;
+    )?.value._clean();
   }
 }
 
@@ -144,6 +145,49 @@ class LambdaType {
 
     return s1.map((key, value) => MapEntry(key, value.substitute(s2)!))
       ..addAll(s2..removeWhere((key, _) => s1.containsKey(key)));
+  }
+
+  LambdaType _clean() {
+    final indexMap = <int, int>{};
+    // return this;
+    return fmap<void>(onVar: (lambdaType, _) => lambdaType);
+  }
+
+  LambdaType fmap<T>({
+    required LambdaType Function(LambdaType, T? param) onVar,
+    T? initialParam,
+    T? Function(T? param)? onArrowEnter,
+    T? Function(T? param)? onArrowExit,
+  }) {
+    final typeStack = [Pair(true, this)];
+    final resultStack = <LambdaType>[];
+    var param = initialParam;
+
+    while (typeStack.isNotEmpty) {
+      final cur = typeStack.last;
+
+      if (!cur.second.isArrow) {
+        typeStack.removeLast();
+        resultStack.add(onVar(cur.second, param));
+      } else if (cur.first) {
+        cur.first = false;
+        param = onArrowEnter?.call(param);
+        typeStack.add(Pair(true, cur.second.type2!));
+        typeStack.add(Pair(true, cur.second.type1!));
+      } else {
+        typeStack.removeLast();
+        final type2 = resultStack.removeLast();
+        final type1 = resultStack.removeLast();
+        resultStack.add(LambdaType(
+          isArrow: true,
+          type1: type1,
+          type2: type2,
+        ));
+        param = onArrowExit?.call(param);
+      }
+    }
+
+    return resultStack.first;
   }
 
   /// Print out the type without redundant parentheses.
