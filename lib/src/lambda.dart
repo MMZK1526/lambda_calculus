@@ -296,10 +296,10 @@ class Lambda implements ILambda<Lambda> {
   Lambda fmap<T>({
     required Lambda Function(Lambda varLambda, T? param, int depth) onVar,
     T? initialParam,
-    T? Function(Lambda lambda, T? param, int depth)? onAbsEnter,
-    T? Function(Lambda lambda, T? param, int depth)? onAbsExit,
-    T? Function(Lambda lambda, T? param, int depth, bool isLeft)? onAppEnter,
-    T? Function(Lambda lambda, T? param, int depth, bool isLeft)? onAppExit,
+    T? Function(T? param, int depth)? onAbsEnter,
+    T? Function(T? param, int depth)? onAbsExit,
+    T? Function(T? param, int depth, bool isLeft)? onAppEnter,
+    T? Function(T? param, int depth, bool isLeft)? onAppExit,
   }) {
     final lambdaStack = [this];
     final resultStack = [Lambda(form: LambdaForm.dummy)];
@@ -311,7 +311,7 @@ class Lambda implements ILambda<Lambda> {
       if (lambdaStack.last.form == LambdaForm.variable) {
         resultStack.last = onVar(lambdaStack.last, param, boundedVars.length);
         while (true) {
-          final cur = lambdaStack.removeLast();
+          lambdaStack.removeLast();
           if (lambdaStack.isEmpty) {
             break;
           }
@@ -320,12 +320,11 @@ class Lambda implements ILambda<Lambda> {
             resultStack.last.exp1 = tempLambda;
             isExp1Stack.removeLast();
             boundedVars.removeAt(0);
-            param = onAbsExit?.call(cur, param, boundedVars.length) ?? param;
+            param = onAbsExit?.call(param, boundedVars.length) ?? param;
           } else if (isExp1Stack.last) {
             resultStack.last.exp1 = tempLambda;
             isExp1Stack.last = false;
             param = onAppExit?.call(
-                  cur,
                   param,
                   boundedVars.length,
                   true,
@@ -334,7 +333,6 @@ class Lambda implements ILambda<Lambda> {
             lambdaStack.add(lambdaStack.last.exp2!);
             resultStack.add(Lambda(form: LambdaForm.dummy));
             param = onAppEnter?.call(
-                  lambdaStack.last,
                   param,
                   boundedVars.length,
                   false,
@@ -345,7 +343,6 @@ class Lambda implements ILambda<Lambda> {
             resultStack.last.exp2 = tempLambda;
             isExp1Stack.removeLast();
             param = onAppExit?.call(
-                  cur,
                   param,
                   boundedVars.length,
                   false,
@@ -359,7 +356,6 @@ class Lambda implements ILambda<Lambda> {
         boundedVars.insert(0, lambdaStack.last.name);
         resultStack.add(Lambda(form: LambdaForm.dummy));
         param = onAbsEnter?.call(
-              lambdaStack.last,
               param,
               boundedVars.length,
             ) ??
@@ -372,7 +368,6 @@ class Lambda implements ILambda<Lambda> {
         lambdaStack.add(lambdaStack.last.exp1!);
         isExp1Stack.add(true);
         param = onAppEnter?.call(
-              lambdaStack.last,
               param,
               boundedVars.length,
               true,

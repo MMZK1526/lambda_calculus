@@ -26,19 +26,19 @@ extension LambdaEvaluationExtension on Lambda {
               : lambda.index,
           name: lambda.name,
         ),
-        onAbsEnter: (lamdba, _, depth) => depth = depth + 1,
-        onAbsExit: (lamdba, _, depth) => depth = depth - 1,
+        onAbsEnter: (_, depth) => depth = depth + 1,
+        onAbsExit: (_, depth) => depth = depth - 1,
       );
 
   Lambda _substitution(Lambda term) => fmap<List<Lambda>>(
         initialParam: [term],
         onVar: (lambda, param, depth) =>
             depth == lambda.index ? param!.last : lambda,
-        onAbsEnter: (_, param, depth) {
+        onAbsEnter: (param, depth) {
           param!.add(param.last._shift(1, 0));
           return param;
         },
-        onAbsExit: (_, param, depth) {
+        onAbsExit: (param, depth) {
           param!.removeLast();
           return param;
         },
