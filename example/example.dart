@@ -11,8 +11,6 @@ void main(List<String> arguments) {
   _printExamples();
   _parseLambda();
   _countFreeVars();
-  // Lambda f = r'(\x. \y. x y) y'.toLambda()!;
-  // print(f.eval(evalType: LambdaEvaluationType.fullReduction));
   _evaluationsByValue();
   _fullEvaluations();
   _evaluationsByName();

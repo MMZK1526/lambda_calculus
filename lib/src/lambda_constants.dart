@@ -1,7 +1,6 @@
 import 'package:lambda_calculus/src/lambda.dart';
 import 'package:lambda_calculus/src/lambda_builder.dart';
 import 'package:lambda_calculus/src/lambda_conversion.dart';
-import 'package:lambda_calculus/src/lambda_form.dart';
 import 'package:lambda_calculus/src/lambda_interface.dart';
 
 /// Common lambda terms and combinators, but in the [LambdaBuilder] form.
@@ -130,17 +129,16 @@ class LambdaBuilderConstants implements ILambdaConstants<LambdaBuilder> {
   LambdaBuilder succ() => LambdaBuilder.abstract(
         LambdaBuilder.abstract(
           LambdaBuilder.abstract(
-            LambdaBuilder(
-              form: LambdaForm.application,
-              exp1: LambdaBuilder.fromVar(name: 'y'),
-              exp2: LambdaBuilder.applyAll(
+            LambdaBuilder.applyAll([
+              LambdaBuilder.fromVar(name: 'y'),
+              LambdaBuilder.applyAll(
                 [
                   LambdaBuilder.fromVar(name: 'x'),
                   LambdaBuilder.fromVar(name: 'y'),
                   LambdaBuilder.fromVar(name: 'z'),
                 ],
               ),
-            ),
+            ]),
             'z',
           ),
           'y',
@@ -279,17 +277,13 @@ class LambdaBuilderConstants implements ILambdaConstants<LambdaBuilder> {
 
   @override
   LambdaBuilder yCombinator() => LambdaBuilder.abstract(
-        LambdaBuilder(
-          form: LambdaForm.application,
+        LambdaBuilder.apply(
           exp1: LambdaBuilder.abstract(
-            LambdaBuilder(
-              form: LambdaForm.application,
+            LambdaBuilder.apply(
               exp1: LambdaBuilder.fromVar(name: 'f'),
               exp2: LambdaBuilder.abstract(
-                LambdaBuilder(
-                  form: LambdaForm.application,
-                  exp1: LambdaBuilder(
-                    form: LambdaForm.application,
+                LambdaBuilder.apply(
+                  exp1: LambdaBuilder.apply(
                     exp1: LambdaBuilder.fromVar(name: 'x'),
                     exp2: LambdaBuilder.fromVar(name: 'x'),
                   ),
@@ -301,14 +295,11 @@ class LambdaBuilderConstants implements ILambdaConstants<LambdaBuilder> {
             'x',
           ),
           exp2: LambdaBuilder.abstract(
-            LambdaBuilder(
-              form: LambdaForm.application,
+            LambdaBuilder.apply(
               exp1: LambdaBuilder.fromVar(name: 'f'),
               exp2: LambdaBuilder.abstract(
-                LambdaBuilder(
-                  form: LambdaForm.application,
-                  exp1: LambdaBuilder(
-                    form: LambdaForm.application,
+                LambdaBuilder.apply(
+                  exp1: LambdaBuilder.apply(
                     exp1: LambdaBuilder.fromVar(name: 'x'),
                     exp2: LambdaBuilder.fromVar(name: 'x'),
                   ),

@@ -26,7 +26,7 @@ import 'package:lambda_calculus/src/lambda.dart';
 /// to construct a variable, and the class will eventually do the necessary
 /// calculation for the De Bruijn index.
 class LambdaBuilder implements ILambda<LambdaBuilder> {
-  LambdaBuilder({
+  LambdaBuilder._({
     required this.form,
     this.index, // For variable
     this.name,
@@ -83,30 +83,38 @@ class LambdaBuilder implements ILambda<LambdaBuilder> {
   /// most one of them can be optional.
   static LambdaBuilder fromVar({int? index, String? name}) {
     assert(index != null || name != null);
-    return LambdaBuilder(form: LambdaForm.variable, index: index, name: name);
+    return LambdaBuilder._(form: LambdaForm.variable, index: index, name: name);
   }
 
   /// Construct the abstraction of a given lambda expression, with an optional
   /// name of the argument.
   static LambdaBuilder abstract(ILambda lambda, [String? name]) =>
-      LambdaBuilder(
+      LambdaBuilder._(
         form: LambdaForm.abstraction,
         exp1: _fromILambda(lambda),
         name: name,
+      );
+
+  /// Apply two lambda expressions together.
+  static LambdaBuilder apply({required ILambda exp1, required ILambda exp2}) =>
+      LambdaBuilder._(
+        form: LambdaForm.application,
+        exp1: _fromILambda(exp1),
+        exp2: _fromILambda(exp2),
       );
 
   /// Apply a list of lambda expressions together with default (left-to-right)
   /// associativity.
   static LambdaBuilder applyAll(List<ILambda> lambdas) {
     if (lambdas.isEmpty) {
-      return LambdaBuilder(
+      return LambdaBuilder._(
         form: LambdaForm.abstraction,
-        exp1: LambdaBuilder(form: LambdaForm.variable, index: 0),
+        exp1: LambdaBuilder._(form: LambdaForm.variable, index: 0),
       );
     }
 
     return lambdas.map(_fromILambda).reduce(
-          (previousValue, element) => LambdaBuilder(
+          (previousValue, element) => LambdaBuilder._(
             form: LambdaForm.application,
             exp1: previousValue,
             exp2: element,
@@ -118,9 +126,9 @@ class LambdaBuilder implements ILambda<LambdaBuilder> {
   /// associativity.
   static LambdaBuilder applyAllReversed(List<LambdaBuilder> lambdas) {
     if (lambdas.isEmpty) {
-      return LambdaBuilder(
+      return LambdaBuilder._(
         form: LambdaForm.abstraction,
-        exp1: LambdaBuilder(form: LambdaForm.variable, index: 0),
+        exp1: LambdaBuilder._(form: LambdaForm.variable, index: 0),
       );
     }
 
@@ -130,7 +138,7 @@ class LambdaBuilder implements ILambda<LambdaBuilder> {
       }
 
       final first = lambdas.removeAt(0);
-      return LambdaBuilder(
+      return LambdaBuilder._(
         form: LambdaForm.application,
         exp1: _fromILambda(first),
         exp2: applyAllReversed(lambdas),
@@ -223,7 +231,7 @@ class LambdaBuilder implements ILambda<LambdaBuilder> {
       return lambda as LambdaBuilder;
     }
 
-    return LambdaBuilder(
+    return LambdaBuilder._(
       form: lambda.form,
       index: lambda.index,
       name: lambda.name,
