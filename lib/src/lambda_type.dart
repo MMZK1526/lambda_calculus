@@ -17,11 +17,11 @@ extension LamdbaTypeExtension on Lambda {
         ],
         (value) {
           result = value;
-          return LambdaType(isArrow: false, varIndex: value.varIndex! + 1);
+          return LambdaType._(isArrow: false, varIndex: value.varIndex! + 1);
         },
         ifAbsent: () {
-          result = const LambdaType(isArrow: false, varIndex: 0);
-          return const LambdaType(isArrow: false, varIndex: 1);
+          result = const LambdaType._(isArrow: false, varIndex: 0);
+          return const LambdaType._(isArrow: false, varIndex: 1);
         },
       );
       return result;
@@ -77,7 +77,7 @@ extension LamdbaTypeExtension on Lambda {
           if (redex != null) {
             return MapEntry(
               redex.key,
-              LambdaType(
+              LambdaType._(
                 isArrow: true,
                 type1: curType,
                 type2: redex.value,
@@ -99,7 +99,8 @@ extension LamdbaTypeExtension on Lambda {
             return null;
           }
           final s1 = term1.value.substitute(term2.key)!.unify(
-                LambdaType(isArrow: true, type1: term2.value, type2: freshType),
+                LambdaType._(
+                    isArrow: true, type1: term2.value, type2: freshType),
               );
           if (s1 == null) {
             return null;
@@ -126,7 +127,7 @@ extension LamdbaTypeExtension on Lambda {
 
 /// The Hindley-Milner type for [Lambda] expressions.
 class LambdaType {
-  const LambdaType({
+  const LambdaType._({
     required this.isArrow,
     this.varIndex,
     this.type1,
@@ -161,14 +162,14 @@ class LambdaType {
   }
 
   static LambdaType fromVar({required int index}) {
-    return LambdaType(isArrow: false, varIndex: index);
+    return LambdaType._(isArrow: false, varIndex: index);
   }
 
   static LambdaType arrow({
     required LambdaType type1,
     required LambdaType type2,
   }) {
-    return LambdaType(isArrow: true, type1: type1, type2: type2);
+    return LambdaType._(isArrow: true, type1: type1, type2: type2);
   }
 
   /// Print out the type without redundant parentheses.
@@ -247,7 +248,7 @@ class LambdaType {
         typeStack.removeLast();
         final type2 = resultStack.removeLast();
         final type1 = resultStack.removeLast();
-        resultStack.add(LambdaType(
+        resultStack.add(LambdaType._(
           isArrow: true,
           type1: type1,
           type2: type2,
@@ -330,7 +331,7 @@ class LambdaType {
             return index;
           },
         );
-        return LambdaType(isArrow: false, varIndex: newIndex);
+        return LambdaType._(isArrow: false, varIndex: newIndex);
       },
       initialParam: Solo(1),
     );
