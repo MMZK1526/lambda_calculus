@@ -122,10 +122,8 @@ class Lambda implements ILambda<Lambda> {
           }
           if (cur.third.name != null) {
             sb.write('λ${cur.third.name}.');
-          } else if (useBracesStack.length > 1) {
-            sb.write('λ_x${useBracesStack.length - 1}.');
           } else {
-            sb.write('λ_y${2 - useBracesStack.length}.');
+            sb.write('λ_x${useBracesStack.length}.');
           }
           useBracesStack.add(false);
           lambdaStack.add(Triple(true, true, cur.third.exp1!));
@@ -469,11 +467,7 @@ class Lambda implements ILambda<Lambda> {
             sb.write('(');
             isLeftParen = true;
           }
-          if (useBracesStack.length > 1) {
-            sb.write('λ_x${useBracesStack.length - 1}.');
-          } else {
-            sb.write('λ_y${2 - useBracesStack.length}.');
-          }
+          sb.write('λ_x${useBracesStack.length}.');
           useBracesStack.add(false);
           lambdaStack.add(Triple(true, true, cur.third.exp1!));
           isLeftParen = false;

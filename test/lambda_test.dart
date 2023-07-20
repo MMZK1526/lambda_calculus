@@ -1,5 +1,36 @@
+import 'dart:math';
+
 import 'package:lambda_calculus/lambda_calculus.dart';
 import 'package:test/test.dart';
+
+Lambda arbitraryLambda({int maxDepth = 26}) {
+  String nextLetter() {
+    final random = Random().nextInt(26);
+    return String.fromCharCode('a'.codeUnitAt(0) + random);
+  }
+
+  LambdaBuilder worker(int maxDepth) {
+    if (maxDepth == 0) {
+      return LambdaBuilder.fromVar(name: nextLetter());
+    }
+
+    final random = Random().nextInt(3);
+
+    switch (random) {
+      case 0:
+        return LambdaBuilder.apply(
+          exp1: worker(maxDepth - 1),
+          exp2: worker(maxDepth - 1),
+        );
+      case 1:
+        return LambdaBuilder.abstract(worker(maxDepth - 1), nextLetter());
+      default:
+        return LambdaBuilder.fromVar(name: nextLetter());
+    }
+  }
+
+  return worker(maxDepth).build();
+}
 
 void main() {
   test(
@@ -110,6 +141,13 @@ void main() {
       );
     },
   );
+
+  test('Lambda Print Test', () {
+    for (final _ in Iterable.generate(14)) {
+      final lambda = arbitraryLambda();
+      expect(lambda.toString().toLambda(), lambda);
+    }
+  });
 
   test('Type Inference Test', () {
     expect(
