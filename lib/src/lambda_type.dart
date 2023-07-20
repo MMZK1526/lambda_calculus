@@ -5,7 +5,9 @@ import 'package:lambda_calculus/src/lambda.dart';
 import 'package:lambda_calculus/src/lambda_form.dart';
 import 'package:lambda_calculus/src/utilities.dart';
 
+/// An extension to find the principal type of a [Lambda].
 extension LamdbaTypeExtension on Lambda {
+  /// Find the principal type of the [Lambda].
   LambdaType? findType() {
     LambdaType getFreshType(Map<List<List<int>>, LambdaType> context) {
       late final LambdaType result;
@@ -47,6 +49,7 @@ extension LamdbaTypeExtension on Lambda {
       return context[curVar]!;
     }
 
+    /// TODO: Avoid recursion
     MapEntry<Map<int, LambdaType>, LambdaType>? work(
       Map<List<List<int>>, LambdaType> context,
       Lambda term,
@@ -121,6 +124,7 @@ extension LamdbaTypeExtension on Lambda {
   }
 }
 
+/// The Hindley-Milner type for [Lambda] expressions.
 class LambdaType {
   const LambdaType({
     required this.isArrow,
@@ -130,11 +134,20 @@ class LambdaType {
   }) : assert((isArrow && type1 != null && type2 != null && varIndex == null) ||
             (!isArrow && type1 == null && type2 == null && varIndex != null));
 
+  /// Is the type an arrow type?
   final bool isArrow;
+
+  /// The index of the variable type. Only valid when [isArrow] is `false`.
   final int? varIndex;
+
+  /// The left-hand side of the arrow type. Only valid when [isArrow] is `true`.
   final LambdaType? type1;
+
+  /// The right-hand side of the arrow type. Only valid when [isArrow] is
+  /// `true`.
   final LambdaType? type2;
 
+  /// Compose two substitutions.
   static Map<int, LambdaType>? compose(
     Map<int, LambdaType>? s2,
     Map<int, LambdaType>? s1,
@@ -145,25 +158,6 @@ class LambdaType {
 
     return s1.map((key, value) => MapEntry(key, value.substitute(s2)!))
       ..addAll(s2..removeWhere((key, _) => s1.containsKey(key)));
-  }
-
-  LambdaType _clean() {
-    final indexMap = <int, int>{};
-    // return this;
-    return fmap<Solo<int>>(
-      onVar: (lambdaType, freshIndex) {
-        final newIndex = indexMap.putIfAbsent(
-          lambdaType.varIndex!,
-          () {
-            final index = freshIndex!.value;
-            freshIndex.value += 1;
-            return index;
-          },
-        );
-        return LambdaType(isArrow: false, varIndex: newIndex);
-      },
-      initialParam: Solo(1),
-    );
   }
 
   LambdaType fmap<T>({
@@ -247,34 +241,44 @@ class LambdaType {
     return sb.toString();
   }
 
-  // TODO: Avoid recursion
+  @override
+  int get hashCode => _clean().toString().hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      other is LambdaType && _clean().toString() == other._clean().toString();
+
   /// Check if the [LambdaType] contains the given variable.
   bool contains(int otherVar) {
-    if (!isArrow) {
-      return varIndex == otherVar;
+    final typeStack = [this];
+
+    while (typeStack.isNotEmpty) {
+      final cur = typeStack.removeLast();
+      if (cur.isArrow) {
+        typeStack.add(cur.type1!);
+        typeStack.add(cur.type2!);
+      } else {
+        if (cur.varIndex == otherVar) {
+          return true;
+        }
+      }
     }
 
-    return type1!.contains(otherVar) || type2!.contains(otherVar);
+    return false;
   }
 
-  // TODO: Avoid recursion
   /// Substitute with the given substitution.
   LambdaType? substitute(Map<int, LambdaType>? substitution) {
-    if (substitution == null) {
-      return null;
-    }
-
-    if (!isArrow) {
-      return substitution[varIndex!] ?? this;
-    }
-
-    return LambdaType(
-      isArrow: true,
-      type1: type1!.substitute(substitution),
-      type2: type2!.substitute(substitution),
+    return fmap<void>(
+      onVar: (lambdaType, _) =>
+          substitution![lambdaType.varIndex!] ?? lambdaType,
     );
   }
 
+  /// TODO: avoid recursion
+  ///
+  /// Unify `this` with the given [LambdaType], returning a substitution if
+  /// possible.
   Map<int, LambdaType>? unify(LambdaType? other) {
     if (other == null) {
       return null;
@@ -300,5 +304,24 @@ class LambdaType {
     final s2 = type2!.substitute(s1)?.unify(other.type2!.substitute(s1));
 
     return compose(s2, s1);
+  }
+
+  LambdaType _clean() {
+    final indexMap = <int, int>{};
+    // return this;
+    return fmap<Solo<int>>(
+      onVar: (lambdaType, freshIndex) {
+        final newIndex = indexMap.putIfAbsent(
+          lambdaType.varIndex!,
+          () {
+            final index = freshIndex!.value;
+            freshIndex.value += 1;
+            return index;
+          },
+        );
+        return LambdaType(isArrow: false, varIndex: newIndex);
+      },
+      initialParam: Solo(1),
+    );
   }
 }

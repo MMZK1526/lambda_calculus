@@ -1,4 +1,9 @@
-## 1.1.2 (unreleased)
+## 1.2.0 (unreleased)
+
+- Change the signature of `fmap` so that "non-leaf" callbacks no longer have access
+  to the term itself. This is because previous usage of this term is not consistent.
+
+- Better printing format for `LambdaType`.
 
 - Fix typos in documentation.
 
