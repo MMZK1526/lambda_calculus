@@ -31,3 +31,26 @@ class Pair<T1, T2> {
   @override
   String toString() => '($first, $second)';
 }
+
+/// Generic mutable triple class.
+class Triple<T1, T2, T3> {
+  T1 first;
+  T2 second;
+  T3 third;
+
+  Triple(this.first, this.second, this.third);
+
+  @override
+  int get hashCode =>
+      first.hashCode * 31 * 31 + second.hashCode * 31 + third.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      other is Triple<T1, T2, T3> &&
+      first == other.first &&
+      second == other.second &&
+      third == other.third;
+
+  @override
+  String toString() => '($first, $second, $third)';
+}

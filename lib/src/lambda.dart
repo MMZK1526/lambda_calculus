@@ -4,6 +4,7 @@ import 'package:lambda_calculus/src/lambda_constants.dart';
 import 'package:lambda_calculus/src/lambda_form.dart';
 import 'package:lambda_calculus/src/lambda_interface.dart';
 import 'package:lambda_calculus/src/lambda_parser.dart';
+import 'package:lambda_calculus/src/utilities.dart';
 
 /// The class representing lambda expressions.
 ///
@@ -78,71 +79,107 @@ class Lambda implements ILambda<Lambda> {
 
     final sb = StringBuffer();
     bool? isLeftParen = true;
-    fmap<List<bool>>(
-      initialParam: [false],
-      onVar: (lambda, _, depth) {
-        final curDepth = depth - lambda.index!;
-        if (isLeftParen != true) {
-          sb.write(' ');
-        }
-        if (lambda.name != null) {
-          sb.write(lambda.name);
-        } else if (curDepth > 0) {
-          sb.write('_x$curDepth');
-        } else {
-          sb.write('_y${1 - curDepth}');
-        }
-        isLeftParen = null;
-        return lambda;
-      },
-      onAbsEnter: (lambda, useBraces, depth) {
-        if ((isLeftParen != true && useBraces!.last) ||
-            (isLeftParen == false && !useBraces!.last)) {
-          sb.write(' ');
-        }
-        if (useBraces!.last) {
-          sb.write('(');
-          isLeftParen = true;
-        }
-        if (lambda.name != null) {
-          sb.write('λ${lambda.name}.');
-        } else if (depth > 0) {
-          sb.write('λ_x$depth.');
-        } else {
-          sb.write('λ_y${1 - depth}.');
-        }
-        useBraces.add(false);
-        isLeftParen = false;
-        return useBraces;
-      },
-      onAbsExit: (lambda, useBraces, depth) {
-        useBraces!.removeLast();
-        if (useBraces.last) {
-          sb.write(')');
+    final lambdaStack = <Triple<bool, bool, Lambda>>[Triple(true, true, this)];
+    final useBracesStack = [false];
+
+    while (lambdaStack.isNotEmpty) {
+      final cur = lambdaStack.last;
+
+      if (cur.first) {
+        if (cur.third.form == LambdaForm.application) {
+          if (cur.second) {
+            if (useBracesStack.last) {
+              if (isLeftParen != true) {
+                sb.write(' ');
+              }
+              sb.write('(');
+              isLeftParen = true;
+            }
+            useBracesStack.add(cur.third.exp1!.form == LambdaForm.abstraction);
+            lambdaStack.add(Triple(true, true, cur.third.exp1!));
+            cur.second = false;
+          } else {
+            if (useBracesStack.last ||
+                cur.third.exp2!.form == LambdaForm.application) {
+              if (isLeftParen != true) {
+                sb.write(' ');
+              }
+              sb.write('(');
+              isLeftParen = true;
+            }
+            useBracesStack.add(cur.third.exp2!.form == LambdaForm.abstraction);
+            lambdaStack.add(Triple(true, true, cur.third.exp2!));
+            cur.first = false;
+          }
+        } else if (cur.third.form == LambdaForm.abstraction) {
+          if ((isLeftParen != true && useBracesStack.last) ||
+              (isLeftParen == false && !useBracesStack.last)) {
+            sb.write(' ');
+          }
+          if (useBracesStack.last) {
+            sb.write('(');
+            isLeftParen = true;
+          }
+          if (cur.third.name != null) {
+            sb.write('λ${cur.third.name}.');
+          } else if (useBracesStack.length > 1) {
+            sb.write('λ_x${useBracesStack.length - 1}.');
+          } else {
+            sb.write('λ_y${2 - useBracesStack.length}.');
+          }
+          useBracesStack.add(false);
+          lambdaStack.add(Triple(true, true, cur.third.exp1!));
           isLeftParen = false;
+          cur.first = false;
+        } else {
+          final curIndex = useBracesStack.length - 1 - cur.third.index!;
+          if (isLeftParen != true) {
+            sb.write(' ');
+          }
+          if (cur.third.name != null) {
+            sb.write(cur.third.name);
+          } else if (curIndex > 0) {
+            sb.write('_x$curIndex');
+          } else {
+            sb.write('_y${1 - curIndex}');
+          }
+          isLeftParen = null;
+          lambdaStack.removeLast();
+          if (lambdaStack.isEmpty) {
+            break;
+          }
+          if (lambdaStack.last.third.form == LambdaForm.application) {
+            useBracesStack.removeLast();
+            if (useBracesStack.last) {
+              sb.write(')');
+              isLeftParen = false;
+            }
+          }
         }
-        return useBraces;
-      },
-      onAppEnter: (lambda, useBraces, depth, isLeft) {
-        if (useBraces!.last ||
-            !isLeft && lambda.form == LambdaForm.application) {
-          if (isLeftParen != true) sb.write(' ');
-          sb.write('(');
-          isLeftParen = true;
+      } else {
+        lambdaStack.removeLast();
+        if (cur.third.form == LambdaForm.abstraction) {
+          useBracesStack.removeLast();
+          if (useBracesStack.last) {
+            sb.write(')');
+            isLeftParen = false;
+          }
         }
-        useBraces.add(lambda.form == LambdaForm.abstraction);
-        return useBraces;
-      },
-      onAppExit: (lambda, useBraces, depth, isLeft) {
-        useBraces!.removeLast();
-        if (useBraces.last ||
-            !isLeft && lambda.form == LambdaForm.application) {
-          sb.write(')');
-          isLeftParen = false;
+
+        if (lambdaStack.isEmpty) {
+          break;
         }
-        return useBraces;
-      },
-    );
+        if (lambdaStack.last.third.form == LambdaForm.application) {
+          useBracesStack.removeLast();
+          if (useBracesStack.last ||
+              !lambdaStack.last.first &&
+                  cur.third.form == LambdaForm.application) {
+            sb.write(')');
+            isLeftParen = false;
+          }
+        }
+      }
+    }
 
     return sb.toString();
   }
@@ -396,67 +433,103 @@ class Lambda implements ILambda<Lambda> {
 
     final sb = StringBuffer();
     bool? isLeftParen = true;
-    fmap<List<bool>>(
-      initialParam: [false],
-      onVar: (lambda, _, depth) {
-        final curDepth = depth - lambda.index!;
-        if (isLeftParen != true) {
-          sb.write(' ');
-        }
-        if (curDepth > 0) {
-          sb.write('_x$curDepth');
-        } else {
-          sb.write('_y${1 - curDepth}');
-        }
-        isLeftParen = null;
-        return lambda;
-      },
-      onAbsEnter: (_, useBraces, depth) {
-        if ((isLeftParen != true && useBraces!.last) ||
-            (isLeftParen == false && !useBraces!.last)) {
-          sb.write(' ');
-        }
-        if (useBraces!.last) {
-          sb.write('(');
-          isLeftParen = true;
-        }
-        if (depth > 0) {
-          sb.write('λ_x$depth.');
-        } else {
-          sb.write('λ_y${1 - depth}.');
-        }
-        useBraces.add(false);
-        isLeftParen = false;
-        return useBraces;
-      },
-      onAbsExit: (_, useBraces, depth) {
-        useBraces!.removeLast();
-        if (useBraces.last) {
-          sb.write(')');
+    final lambdaStack = <Triple<bool, bool, Lambda>>[Triple(true, true, this)];
+    final useBracesStack = [false];
+
+    while (lambdaStack.isNotEmpty) {
+      final cur = lambdaStack.last;
+
+      if (cur.first) {
+        if (cur.third.form == LambdaForm.application) {
+          if (cur.second) {
+            if (useBracesStack.last) {
+              if (isLeftParen != true) {
+                sb.write(' ');
+              }
+              sb.write('(');
+              isLeftParen = true;
+            }
+            useBracesStack.add(cur.third.exp1!.form == LambdaForm.abstraction);
+            lambdaStack.add(Triple(true, true, cur.third.exp1!));
+            cur.second = false;
+          } else {
+            if (useBracesStack.last ||
+                cur.third.exp2!.form == LambdaForm.application) {
+              if (isLeftParen != true) {
+                sb.write(' ');
+              }
+              sb.write('(');
+              isLeftParen = true;
+            }
+            useBracesStack.add(cur.third.exp2!.form == LambdaForm.abstraction);
+            lambdaStack.add(Triple(true, true, cur.third.exp2!));
+            cur.first = false;
+          }
+        } else if (cur.third.form == LambdaForm.abstraction) {
+          if ((isLeftParen != true && useBracesStack.last) ||
+              (isLeftParen == false && !useBracesStack.last)) {
+            sb.write(' ');
+          }
+          if (useBracesStack.last) {
+            sb.write('(');
+            isLeftParen = true;
+          }
+          if (useBracesStack.length > 1) {
+            sb.write('λ_x${useBracesStack.length - 1}.');
+          } else {
+            sb.write('λ_y${2 - useBracesStack.length}.');
+          }
+          useBracesStack.add(false);
+          lambdaStack.add(Triple(true, true, cur.third.exp1!));
           isLeftParen = false;
+          cur.first = false;
+        } else {
+          final curIndex = useBracesStack.length - 1 - cur.third.index!;
+          if (isLeftParen != true) {
+            sb.write(' ');
+          }
+          if (curIndex > 0) {
+            sb.write('_x$curIndex');
+          } else {
+            sb.write('_y${1 - curIndex}');
+          }
+          isLeftParen = null;
+          lambdaStack.removeLast();
+          if (lambdaStack.isEmpty) {
+            break;
+          }
+          if (lambdaStack.last.third.form == LambdaForm.application) {
+            useBracesStack.removeLast();
+            if (useBracesStack.last) {
+              sb.write(')');
+              isLeftParen = false;
+            }
+          }
         }
-        return useBraces;
-      },
-      onAppEnter: (lambda, useBraces, depth, isLeft) {
-        if (useBraces!.last ||
-            !isLeft && lambda.form == LambdaForm.application) {
-          if (isLeftParen != true) sb.write(' ');
-          sb.write('(');
-          isLeftParen = true;
+      } else {
+        lambdaStack.removeLast();
+        if (cur.third.form == LambdaForm.abstraction) {
+          useBracesStack.removeLast();
+          if (useBracesStack.last) {
+            sb.write(')');
+            isLeftParen = false;
+          }
         }
-        useBraces.add(lambda.form == LambdaForm.abstraction);
-        return useBraces;
-      },
-      onAppExit: (lambda, useBraces, depth, isLeft) {
-        useBraces!.removeLast();
-        if (useBraces.last ||
-            !isLeft && lambda.form == LambdaForm.application) {
-          sb.write(')');
-          isLeftParen = false;
+
+        if (lambdaStack.isEmpty) {
+          break;
         }
-        return useBraces;
-      },
-    );
+        if (lambdaStack.last.third.form == LambdaForm.application) {
+          useBracesStack.removeLast();
+          if (useBracesStack.last ||
+              !lambdaStack.last.first &&
+                  cur.third.form == LambdaForm.application) {
+            sb.write(')');
+            isLeftParen = false;
+          }
+        }
+      }
+    }
 
     return sb.toString();
   }
