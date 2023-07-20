@@ -160,41 +160,15 @@ class LambdaType {
       ..addAll(s2..removeWhere((key, _) => s1.containsKey(key)));
   }
 
-  LambdaType fmap<T>({
-    required LambdaType Function(LambdaType varLambdaType, T? param) onVar,
-    T? initialParam,
-    T? Function(T? param)? onArrowEnter,
-    T? Function(T? param)? onArrowExit,
+  static LambdaType fromVar({required int index}) {
+    return LambdaType(isArrow: false, varIndex: index);
+  }
+
+  static LambdaType arrow({
+    required LambdaType type1,
+    required LambdaType type2,
   }) {
-    final typeStack = [Pair(true, this)];
-    final resultStack = <LambdaType>[];
-    var param = initialParam;
-
-    while (typeStack.isNotEmpty) {
-      final cur = typeStack.last;
-
-      if (!cur.second.isArrow) {
-        typeStack.removeLast();
-        resultStack.add(onVar(cur.second, param));
-      } else if (cur.first) {
-        cur.first = false;
-        param = onArrowEnter?.call(param) ?? param;
-        typeStack.add(Pair(true, cur.second.type2!));
-        typeStack.add(Pair(true, cur.second.type1!));
-      } else {
-        typeStack.removeLast();
-        final type2 = resultStack.removeLast();
-        final type1 = resultStack.removeLast();
-        resultStack.add(LambdaType(
-          isArrow: true,
-          type1: type1,
-          type2: type2,
-        ));
-        param = onArrowExit?.call(param) ?? param;
-      }
-    }
-
-    return resultStack.first;
+    return LambdaType(isArrow: true, type1: type1, type2: type2);
   }
 
   /// Print out the type without redundant parentheses.
@@ -247,6 +221,43 @@ class LambdaType {
   @override
   bool operator ==(Object other) =>
       other is LambdaType && _clean().toString() == other._clean().toString();
+
+  LambdaType fmap<T>({
+    required LambdaType Function(LambdaType varLambdaType, T? param) onVar,
+    T? initialParam,
+    T? Function(T? param)? onArrowEnter,
+    T? Function(T? param)? onArrowExit,
+  }) {
+    final typeStack = [Pair(true, this)];
+    final resultStack = <LambdaType>[];
+    var param = initialParam;
+
+    while (typeStack.isNotEmpty) {
+      final cur = typeStack.last;
+
+      if (!cur.second.isArrow) {
+        typeStack.removeLast();
+        resultStack.add(onVar(cur.second, param));
+      } else if (cur.first) {
+        cur.first = false;
+        param = onArrowEnter?.call(param) ?? param;
+        typeStack.add(Pair(true, cur.second.type2!));
+        typeStack.add(Pair(true, cur.second.type1!));
+      } else {
+        typeStack.removeLast();
+        final type2 = resultStack.removeLast();
+        final type1 = resultStack.removeLast();
+        resultStack.add(LambdaType(
+          isArrow: true,
+          type1: type1,
+          type2: type2,
+        ));
+        param = onArrowExit?.call(param) ?? param;
+      }
+    }
+
+    return resultStack.first;
+  }
 
   /// Check if the [LambdaType] contains the given variable.
   bool contains(int otherVar) {

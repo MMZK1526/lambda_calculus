@@ -27,7 +27,7 @@ void main(List<String> arguments) {
   final m = r"\a. \b. \c. a c (b c)".toLambda()!;
   print("The type for $m is ${m.findType()}");
 
-  print(10.toChurchNumber().findType());
+  print(Lambda.constants.and().findType());
 }
 
 void _printExamples() {
