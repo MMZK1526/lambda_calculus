@@ -3,7 +3,7 @@ import 'package:test/test.dart';
 
 void main() {
   test(
-    'Clone Test',
+    'Lambda Clone Test',
     () {
       expect(
         identityHashCode(Lambda.constants.lambdaTrue()),
@@ -29,21 +29,18 @@ void main() {
     },
   );
 
-  test('Parse Test', () {
+  test('Lambda Parse Test', () {
     expect(
       r'\x1(λx2. x1 (λx3. x2 x2 x3)) (λx2. x1 (λ x2 x2 0))'.toLambda(),
       Lambda.constants.yCombinator(),
     );
-    expect(
-      r'\_x1 _x1'.toLambda(),
-      Lambda.constants.identity(),
-    );
+    expect(r'\_x1 _x1'.toLambda(), Lambda.constants.identity());
     expect(r'\_x2 _x1'.toLambda(), null);
     expect(r'((x1 (\x2 x2))'.toLambda(), null);
   });
 
   test(
-    'Evaluation Test',
+    'Lambda Evaluation Test',
     () {
       expect(
         LambdaBuilder.applyAll([
@@ -113,4 +110,29 @@ void main() {
       );
     },
   );
+
+  test('Type Inference Test', () {
+    expect(
+      Lambda.constants.and().findType(),
+      LambdaType.arrow(
+        type1: LambdaType.arrow(
+          type1: LambdaType.fromVar(index: 1),
+          type2: LambdaType.arrow(
+            type1: LambdaType.arrow(
+              type1: LambdaType.fromVar(index: 2),
+              type2: LambdaType.arrow(
+                type1: LambdaType.fromVar(index: 3),
+                type2: LambdaType.fromVar(index: 3),
+              ),
+            ),
+            type2: LambdaType.fromVar(index: 4),
+          ),
+        ),
+        type2: LambdaType.arrow(
+          type1: LambdaType.fromVar(index: 1),
+          type2: LambdaType.fromVar(index: 4),
+        ),
+      ),
+    );
+  });
 }
