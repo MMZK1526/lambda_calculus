@@ -1,4 +1,3 @@
-import 'package:dartz/dartz.dart';
 import 'package:lambda_calculus/src/lambda_builder.dart';
 import 'package:lambda_calculus/src/lambda_constants.dart';
 import 'package:lambda_calculus/src/lambda_form.dart';
@@ -396,23 +395,22 @@ class Lambda implements ILambda<Lambda> {
   ///
   /// If the `countDistinct` parameter is set to true, count for the number of
   /// distinct free variables; otherwise count for the total appearances.
-  int freeCount({bool countDistinct = false}) =>
-      fold<int, Tuple2<int, Set<int>>>(
-        initialParam: Tuple2(0, {}),
-        select: (tuple2) => tuple2.value1,
+  int freeCount({bool countDistinct = false}) => fold<int, Pair<int, Set<int>>>(
+        initialParam: Pair(0, {}),
+        select: (tuple2) => tuple2.first,
         onVar: countDistinct
             ? (lambda, tuple2, depth) {
                 if (depth - lambda.index! <= 0 &&
-                    !tuple2.value2.contains(depth - lambda.index!)) {
-                  tuple2.value2.add(depth - lambda.index!);
-                  return tuple2.copyWith(value1: tuple2.value1 + 1);
+                    !tuple2.second.contains(depth - lambda.index!)) {
+                  tuple2.second.add(depth - lambda.index!);
+                  return Pair(tuple2.first + 1, tuple2.second);
                 } else {
                   return tuple2;
                 }
               }
             : (lambda, tuple2, depth) {
                 if (depth - lambda.index! <= 0) {
-                  return tuple2.copyWith(value1: tuple2.value1 + 1);
+                  return Pair(tuple2.first + 1, tuple2.second);
                 } else {
                   return tuple2;
                 }
