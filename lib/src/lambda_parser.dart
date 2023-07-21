@@ -49,7 +49,9 @@ extension ToLambdaExtension on String {
   /// plan to generate legal fresh names to avoid this hole.
   Lambda? toLambda() {
     final tokens = _lambdaLexer(this);
-    if (tokens == null) return null;
+    if (tokens == null) {
+      return null;
+    }
     return _lambdaParser(tokens);
   }
 }
@@ -119,7 +121,9 @@ List<_LambdaToken>? _lambdaLexer(String str) {
       // MARK: Right Bracket
       case r')':
         // MARK: Extraneous Right Bracket
-        if (bracketStack.length == 1) return null;
+        if (bracketStack.length == 1) {
+          return null;
+        }
         // Remove out-of-scope variables.
         boundedVars.removeRange(0, bracketStack.removeLast());
         tokens.add(_LambdaToken(_LambdaTokenType.rbrace));

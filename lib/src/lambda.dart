@@ -164,6 +164,7 @@ class Lambda implements ILambda<Lambda> {
             sb.write(')');
             isLeftParen = false;
           }
+          depth -= 1;
         }
 
         if (lambdaStack.isEmpty) {
@@ -175,7 +176,6 @@ class Lambda implements ILambda<Lambda> {
               !lambdaStack.last.first &&
                   cur.third.form == LambdaForm.application) {
             sb.write(')');
-            depth -= 1;
             isLeftParen = false;
           }
         }
@@ -508,6 +508,7 @@ class Lambda implements ILambda<Lambda> {
             sb.write(')');
             isLeftParen = false;
           }
+          depth -= 1;
         }
 
         if (lambdaStack.isEmpty) {
@@ -519,7 +520,6 @@ class Lambda implements ILambda<Lambda> {
               !lambdaStack.last.first &&
                   cur.third.form == LambdaForm.application) {
             sb.write(')');
-            depth -= 1;
             isLeftParen = false;
           }
         }
