@@ -81,6 +81,7 @@ class Lambda implements ILambda<Lambda> {
     bool? isLeftParen = true;
     final lambdaStack = <Triple<bool, bool, Lambda>>[Triple(true, true, this)];
     final useBracesStack = [false];
+    int depth = 0;
 
     while (lambdaStack.isNotEmpty) {
       final cur = lambdaStack.last;
@@ -120,17 +121,18 @@ class Lambda implements ILambda<Lambda> {
             sb.write('(');
             isLeftParen = true;
           }
+          depth += 1;
           if (cur.third.name != null) {
             sb.write('λ${cur.third.name}.');
           } else {
-            sb.write('λ_x${useBracesStack.length}.');
+            sb.write('λ_x$depth.');
           }
           useBracesStack.add(false);
           lambdaStack.add(Triple(true, true, cur.third.exp1!));
           isLeftParen = false;
           cur.first = false;
         } else {
-          final curIndex = useBracesStack.length - 1 - cur.third.index!;
+          final curIndex = depth - cur.third.index!;
           if (isLeftParen != true) {
             sb.write(' ');
           }
@@ -173,6 +175,7 @@ class Lambda implements ILambda<Lambda> {
               !lambdaStack.last.first &&
                   cur.third.form == LambdaForm.application) {
             sb.write(')');
+            depth -= 1;
             isLeftParen = false;
           }
         }
@@ -428,6 +431,7 @@ class Lambda implements ILambda<Lambda> {
     bool? isLeftParen = true;
     final lambdaStack = <Triple<bool, bool, Lambda>>[Triple(true, true, this)];
     final useBracesStack = [false];
+    int depth = 0;
 
     while (lambdaStack.isNotEmpty) {
       final cur = lambdaStack.last;
@@ -467,13 +471,14 @@ class Lambda implements ILambda<Lambda> {
             sb.write('(');
             isLeftParen = true;
           }
-          sb.write('λ_x${useBracesStack.length}.');
+          depth += 1;
+          sb.write('λ_x$depth.');
           useBracesStack.add(false);
           lambdaStack.add(Triple(true, true, cur.third.exp1!));
           isLeftParen = false;
           cur.first = false;
         } else {
-          final curIndex = useBracesStack.length - 1 - cur.third.index!;
+          final curIndex = depth - cur.third.index!;
           if (isLeftParen != true) {
             sb.write(' ');
           }
@@ -514,6 +519,7 @@ class Lambda implements ILambda<Lambda> {
               !lambdaStack.last.first &&
                   cur.third.form == LambdaForm.application) {
             sb.write(')');
+            depth -= 1;
             isLeftParen = false;
           }
         }
