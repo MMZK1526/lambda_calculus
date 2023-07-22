@@ -76,10 +76,13 @@ class Lambda implements ILambda<Lambda> {
   String toString() {
     if (form == LambdaForm.dummy) return '[DUMMY]';
 
-    final sb = StringBuffer();
+    // final sb = StringBuffer();
+    final sb = <Object>[];
     bool? isLeftParen = true;
     final lambdaStack = <Triple<bool, bool, Lambda>>[Triple(true, true, this)];
     final useBracesStack = [false];
+    final boundVariables = <_LambdaFragment>[];
+    final variableDepths = <String, List<int>>{};
     int depth = 0;
 
     while (lambdaStack.isNotEmpty) {
@@ -90,9 +93,9 @@ class Lambda implements ILambda<Lambda> {
           if (cur.second) {
             if (useBracesStack.last) {
               if (isLeftParen != true) {
-                sb.write(' ');
+                sb.add(' ');
               }
-              sb.write('(');
+              sb.add('(');
               isLeftParen = true;
             }
             useBracesStack.add(cur.third.exp1!.form == LambdaForm.abstraction);
@@ -102,9 +105,9 @@ class Lambda implements ILambda<Lambda> {
             if (useBracesStack.last ||
                 cur.third.exp2!.form == LambdaForm.application) {
               if (isLeftParen != true) {
-                sb.write(' ');
+                sb.add(' ');
               }
-              sb.write('(');
+              sb.add('(');
               isLeftParen = true;
             }
             useBracesStack.add(cur.third.exp2!.form == LambdaForm.abstraction);
@@ -114,18 +117,23 @@ class Lambda implements ILambda<Lambda> {
         } else if (cur.third.form == LambdaForm.abstraction) {
           if ((isLeftParen != true && useBracesStack.last) ||
               (isLeftParen == false && !useBracesStack.last)) {
-            sb.write(' ');
+            sb.add(' ');
           }
           if (useBracesStack.last) {
-            sb.write('(');
+            sb.add('(');
             isLeftParen = true;
           }
           depth += 1;
+          final fragment = _LambdaFragment(name: cur.third.name, depth: depth);
+          boundVariables.add(fragment);
           if (cur.third.name != null) {
-            sb.write('λ${cur.third.name}.');
-          } else {
-            sb.write('λ_x$depth.');
+            variableDepths.update(
+              cur.third.name!,
+              (value) => value..add(depth),
+              ifAbsent: () => [depth],
+            );
           }
+          sb.add(fragment);
           useBracesStack.add(false);
           lambdaStack.add(Triple(true, true, cur.third.exp1!));
           isLeftParen = false;
@@ -133,14 +141,17 @@ class Lambda implements ILambda<Lambda> {
         } else {
           final curIndex = depth - cur.third.index!;
           if (isLeftParen != true) {
-            sb.write(' ');
+            sb.add(' ');
           }
-          if (cur.third.name != null) {
-            sb.write(cur.third.name);
+          if (cur.third.name != null &&
+              variableDepths[cur.third.name]?.isNotEmpty == true &&
+              variableDepths[cur.third.name]!.last == curIndex) {
+            sb.add(cur.third.name!);
           } else if (curIndex > 0) {
-            sb.write('_x$curIndex');
+            boundVariables[curIndex - 1].name = null;
+            sb.add('_x$curIndex');
           } else {
-            sb.write('_y${1 - curIndex}');
+            sb.add('_y${1 - curIndex}');
           }
           isLeftParen = null;
           lambdaStack.removeLast();
@@ -150,7 +161,7 @@ class Lambda implements ILambda<Lambda> {
           if (lambdaStack.last.third.form == LambdaForm.application) {
             useBracesStack.removeLast();
             if (useBracesStack.last) {
-              sb.write(')');
+              sb.add(')');
               isLeftParen = false;
             }
           }
@@ -160,10 +171,14 @@ class Lambda implements ILambda<Lambda> {
         if (cur.third.form == LambdaForm.abstraction) {
           useBracesStack.removeLast();
           if (useBracesStack.last) {
-            sb.write(')');
+            sb.add(')');
             isLeftParen = false;
           }
           depth -= 1;
+          boundVariables.removeLast();
+          if (cur.third.name != null) {
+            variableDepths[cur.third.name!]!.removeLast();
+          }
         }
 
         if (lambdaStack.isEmpty) {
@@ -174,14 +189,14 @@ class Lambda implements ILambda<Lambda> {
           if (useBracesStack.last ||
               !lambdaStack.last.first &&
                   cur.third.form == LambdaForm.application) {
-            sb.write(')');
+            sb.add(')');
             isLeftParen = false;
           }
         }
       }
     }
 
-    return sb.toString();
+    return sb.map((e) => e.toString()).join();
   }
 
   /// A higher-order function that iterates on the [Lambda], returning a value.
@@ -526,4 +541,15 @@ class Lambda implements ILambda<Lambda> {
 
     return sb.toString();
   }
+}
+
+class _LambdaFragment {
+  _LambdaFragment({this.name, required this.depth});
+
+  String? name;
+
+  int depth;
+
+  @override
+  String toString() => name != null ? 'λ$name' : 'λ_x$depth.';
 }
