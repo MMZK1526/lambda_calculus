@@ -35,13 +35,13 @@ class Lambda implements ILambda<Lambda> {
                 (index != null || exp1 == null || exp2 != null)));
 
   @override
-  LambdaForm form;
+  final LambdaForm form;
 
   @override
-  int? index;
+  final int? index;
 
   @override
-  String? name;
+  final String? name;
 
   @override
   Lambda? exp1;
