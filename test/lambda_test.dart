@@ -57,6 +57,14 @@ void main() {
         Lambda.constants.yCombinator(),
         Lambda.constants.yCombinator().clone(),
       );
+      for (final _ in Iterable.generate(14)) {
+        final lambda = arbitraryLambda();
+        expect(
+          identityHashCode(lambda),
+          isNot(identityHashCode(lambda.clone())),
+        );
+        expect(lambda, lambda.clone());
+      }
     },
   );
 

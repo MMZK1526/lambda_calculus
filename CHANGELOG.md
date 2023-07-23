@@ -3,6 +3,9 @@
 - Change the signature of `fmap` so that "non-leaf" callbacks no longer have access
   to the term itself. This is because previous usage of this term is not consistent.
 
+- Fix the problem where variables with the same name can conflict with each other
+  during evaluation.
+
 - Better printing format for `LambdaType`.
 
 - Fix typos in documentation.

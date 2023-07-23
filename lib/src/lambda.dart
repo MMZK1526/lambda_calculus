@@ -76,7 +76,6 @@ class Lambda implements ILambda<Lambda> {
   String toString() {
     if (form == LambdaForm.dummy) return '[DUMMY]';
 
-    // final sb = StringBuffer();
     final sb = <Object>[];
     bool? isLeftParen = true;
     final lambdaStack = <Triple<bool, bool, Lambda>>[Triple(true, true, this)];
@@ -87,7 +86,6 @@ class Lambda implements ILambda<Lambda> {
 
     while (lambdaStack.isNotEmpty) {
       final cur = lambdaStack.last;
-
       if (cur.first) {
         if (cur.third.form == LambdaForm.application) {
           if (cur.second) {
@@ -316,90 +314,144 @@ class Lambda implements ILambda<Lambda> {
     T? Function(T? param, int depth, bool isLeft)? onAppEnter,
     T? Function(T? param, int depth, bool isLeft)? onAppExit,
   }) {
-    final lambdaStack = [this];
-    final resultStack = [Lambda(form: LambdaForm.dummy)];
-    final isExp1Stack = [true];
-    final boundedVars = <String?>[];
+    final lambdaStack = <Triple<bool, bool, Lambda>>[Triple(true, true, this)];
+    final resultStack = <Lambda>[];
+    int depth = 0;
     var param = initialParam;
 
     while (lambdaStack.isNotEmpty) {
-      if (lambdaStack.last.form == LambdaForm.variable) {
-        resultStack.last = onVar(lambdaStack.last, param, boundedVars.length);
-        while (true) {
-          lambdaStack.removeLast();
-          if (lambdaStack.isEmpty) {
-            break;
-          }
-          var tempLambda = resultStack.removeLast();
-          if (resultStack.last.form == LambdaForm.abstraction) {
-            resultStack.last.exp1 = tempLambda;
-            isExp1Stack.removeLast();
-            boundedVars.removeAt(0);
-            param = onAbsExit?.call(param, boundedVars.length) ?? param;
-          } else if (isExp1Stack.last) {
-            resultStack.last.exp1 = tempLambda;
-            isExp1Stack.last = false;
-            param = onAppExit?.call(
-                  param,
-                  boundedVars.length,
-                  true,
-                ) ??
-                param;
-            lambdaStack.add(lambdaStack.last.exp2!);
-            resultStack.add(Lambda(form: LambdaForm.dummy));
-            param = onAppEnter?.call(
-                  param,
-                  boundedVars.length,
-                  false,
-                ) ??
-                param;
-            break;
+      final cur = lambdaStack.last;
+      if (cur.first) {
+        if (cur.third.form == LambdaForm.application) {
+          if (cur.second) {
+            param = onAppEnter?.call(param, depth, true) ?? param;
+            lambdaStack.add(Triple(true, true, cur.third.exp1!));
+            cur.second = false;
           } else {
-            resultStack.last.exp2 = tempLambda;
-            isExp1Stack.removeLast();
-            param = onAppExit?.call(
-                  param,
-                  boundedVars.length,
-                  false,
-                ) ??
-                param;
+            param = onAppExit?.call(param, depth, true) ?? param;
+            param = onAppEnter?.call(param, depth, false) ?? param;
+            lambdaStack.add(Triple(true, true, cur.third.exp2!));
+            cur.first = false;
           }
+        } else if (cur.third.form == LambdaForm.abstraction) {
+          param = onAbsEnter?.call(param, depth) ?? param;
+          depth += 1;
+          lambdaStack.add(Triple(true, true, cur.third.exp1!));
+          cur.first = false;
+        } else {
+          resultStack.add(onVar(cur.third, param, depth));
+          lambdaStack.removeLast();
         }
-      } else if (lambdaStack.last.form == LambdaForm.abstraction) {
-        resultStack.last.form = LambdaForm.abstraction;
-        resultStack.last.name = lambdaStack.last.name;
-        boundedVars.insert(0, lambdaStack.last.name);
-        resultStack.add(Lambda(form: LambdaForm.dummy));
-        param = onAbsEnter?.call(
-              param,
-              boundedVars.length,
-            ) ??
-            param;
-        lambdaStack.add(lambdaStack.last.exp1!);
-        isExp1Stack.add(true);
       } else {
-        resultStack.last.form = LambdaForm.application;
-        resultStack.add(Lambda(form: LambdaForm.dummy));
-        lambdaStack.add(lambdaStack.last.exp1!);
-        isExp1Stack.add(true);
-        param = onAppEnter?.call(
-              param,
-              boundedVars.length,
-              true,
-            ) ??
-            param;
+        lambdaStack.removeLast();
+        if (cur.third.form == LambdaForm.abstraction) {
+          final lambda = resultStack.removeLast();
+          resultStack.add(Lambda(
+            form: LambdaForm.abstraction,
+            name: cur.third.name,
+            exp1: lambda,
+          ));
+          depth -= 1;
+          param = onAbsExit?.call(param, depth) ?? param;
+        } else {
+          param = onAppExit?.call(param, depth, false) ?? param;
+          final lambda2 = resultStack.removeLast();
+          final lambda1 = resultStack.removeLast();
+          resultStack.add(Lambda(
+            form: LambdaForm.application,
+            exp1: lambda1,
+            exp2: lambda2,
+          ));
+        }
       }
     }
 
-    assert(resultStack.length == 1);
     return resultStack.first;
+
+    // final lambdaStack = [this];
+    // final resultStack = [Lambda(form: LambdaForm.dummy)];
+    // final isExp1Stack = [true];
+    // final boundedVars = <String?>[];
+    // var param = initialParam;
+
+    // while (lambdaStack.isNotEmpty) {
+    //   if (lambdaStack.last.form == LambdaForm.variable) {
+    //     resultStack.last = onVar(lambdaStack.last, param, boundedVars.length);
+    //     while (true) {
+    //       lambdaStack.removeLast();
+    //       if (lambdaStack.isEmpty) {
+    //         break;
+    //       }
+    //       var tempLambda = resultStack.removeLast();
+    //       if (resultStack.last.form == LambdaForm.abstraction) {
+    //         resultStack.last.exp1 = tempLambda;
+    //         isExp1Stack.removeLast();
+    //         boundedVars.removeAt(0);
+    //         param = onAbsExit?.call(param, boundedVars.length) ?? param;
+    //       } else if (isExp1Stack.last) {
+    //         resultStack.last.exp1 = tempLambda;
+    //         isExp1Stack.last = false;
+    //         param = onAppExit?.call(
+    //               param,
+    //               boundedVars.length,
+    //               true,
+    //             ) ??
+    //             param;
+    //         lambdaStack.add(lambdaStack.last.exp2!);
+    //         resultStack.add(Lambda(form: LambdaForm.dummy));
+    //         param = onAppEnter?.call(
+    //               param,
+    //               boundedVars.length,
+    //               false,
+    //             ) ??
+    //             param;
+    //         break;
+    //       } else {
+    //         resultStack.last.exp2 = tempLambda;
+    //         isExp1Stack.removeLast();
+    //         param = onAppExit?.call(
+    //               param,
+    //               boundedVars.length,
+    //               false,
+    //             ) ??
+    //             param;
+    //       }
+    //     }
+    //   } else if (lambdaStack.last.form == LambdaForm.abstraction) {
+    //     resultStack.last.form = LambdaForm.abstraction;
+    //     resultStack.last.name = lambdaStack.last.name;
+    //     boundedVars.insert(0, lambdaStack.last.name);
+    //     resultStack.add(Lambda(form: LambdaForm.dummy));
+    //     param = onAbsEnter?.call(
+    //           param,
+    //           boundedVars.length,
+    //         ) ??
+    //         param;
+    //     lambdaStack.add(lambdaStack.last.exp1!);
+    //     isExp1Stack.add(true);
+    //   } else {
+    //     resultStack.last.form = LambdaForm.application;
+    //     resultStack.add(Lambda(form: LambdaForm.dummy));
+    //     lambdaStack.add(lambdaStack.last.exp1!);
+    //     isExp1Stack.add(true);
+    //     param = onAppEnter?.call(
+    //           param,
+    //           boundedVars.length,
+    //           true,
+    //         ) ??
+    //         param;
+    //   }
+    // }
+
+    // assert(resultStack.length == 1);
+    // return resultStack.first;
   }
 
   /// Clone this lambda expression.
   ///
   /// Avoids recursion.
   Lambda clone() => fmap<void>(
-        onVar: (lambda, _, depth) => Lambda(
+        onVar: (lambda, _, __) => Lambda(
           form: LambdaForm.variable,
           index: lambda.index,
           name: lambda.name,
