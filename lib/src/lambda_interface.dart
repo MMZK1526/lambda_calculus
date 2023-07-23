@@ -1,5 +1,6 @@
 import 'package:lambda_calculus/src/lambda.dart';
 import 'package:lambda_calculus/src/lambda_form.dart';
+import 'package:lambda_calculus/src/utilities.dart';
 
 /// An interface for [Lambda]-ish expressions.
 abstract class ILambda<T> {
@@ -21,6 +22,75 @@ abstract class ILambda<T> {
   /// The "second" sub-expression. If the form is [LambdaForm.application], it
   /// the "argument".
   T? get exp2;
+
+  /// A higher-order function for [ILambda] transformation.
+  ///
+  /// See [Lambda.fmap] for more details.
+  static D fmap<S extends ILambda, D extends ILambda, T>({
+    required D Function(S varLambda, T? param, int depth) onVar,
+    T? initialParam,
+    T? Function(T? param, int depth)? onAbsEnter,
+    T? Function(T? param, int depth)? onAbsExit,
+    T? Function(T? param, int depth, bool isLeft)? onAppEnter,
+    T? Function(T? param, int depth, bool isLeft)? onAppExit,
+    required S initialLambda,
+    required D Function(D lambda, [String? name]) abstract,
+    required D Function({required D exp1, required D exp2}) apply,
+  }) {
+    final lambdaStack = <Triple<bool, bool, S>>[
+      Triple(true, true, initialLambda),
+    ];
+    final resultStack = <D>[];
+    int depth = 0;
+    var param = initialParam;
+
+    while (lambdaStack.isNotEmpty) {
+      final cur = lambdaStack.last;
+      if (cur.first) {
+        if (cur.third.form == LambdaForm.application) {
+          if (cur.second) {
+            param = onAppEnter?.call(param, depth, true) ?? param;
+            lambdaStack.add(Triple(true, true, cur.third.exp1!));
+            cur.second = false;
+          } else {
+            param = onAppExit?.call(param, depth, true) ?? param;
+            param = onAppEnter?.call(param, depth, false) ?? param;
+            lambdaStack.add(Triple(true, true, cur.third.exp2!));
+            cur.first = false;
+          }
+        } else if (cur.third.form == LambdaForm.abstraction) {
+          param = onAbsEnter?.call(param, depth) ?? param;
+          depth += 1;
+          lambdaStack.add(Triple(true, true, cur.third.exp1!));
+          cur.first = false;
+        } else {
+          resultStack.add(onVar(cur.third, param, depth));
+          lambdaStack.removeLast();
+        }
+      } else {
+        lambdaStack.removeLast();
+        if (cur.third.form == LambdaForm.abstraction) {
+          final lambda = resultStack.removeLast();
+          resultStack.add(abstract(
+            lambda,
+            cur.third.name,
+          ));
+          depth -= 1;
+          param = onAbsExit?.call(param, depth) ?? param;
+        } else {
+          param = onAppExit?.call(param, depth, false) ?? param;
+          final lambda2 = resultStack.removeLast();
+          final lambda1 = resultStack.removeLast();
+          resultStack.add(apply(
+            exp1: lambda1,
+            exp2: lambda2,
+          ));
+        }
+      }
+    }
+
+    return resultStack.first;
+  }
 }
 
 /// An interface for common constants/combinators in lambda calculus.
