@@ -150,80 +150,63 @@ class LambdaBuilder implements ILambda<LambdaBuilder> {
 
   /// Build the [LambdaBuilder] into a [Lambda].
   Lambda build() {
-    final lambdaStack = [this];
-    final resultStack = <Lambda>[Lambda(form: LambdaForm.dummy)];
-    final isExp1Stack = [true];
+    // final lambdaStack = [this];
+    // final resultStack = <Lambda>[Lambda(form: LambdaForm.dummy)];
+    // final isExp1Stack = [true];
     final freeVars = <String>[];
     final boundedVars = <String?>[];
 
-    while (lambdaStack.isNotEmpty) {
-      if (lambdaStack.last.form == LambdaForm.variable) {
-        if (lambdaStack.last.index == null) {
-          var index = boundedVars.indexOf(lambdaStack.last.name!);
+    return ILambda.fmap<LambdaBuilder, Lambda, void>(
+      initialLambda: this,
+      onVar: (varLambda, _, __) {
+        if (varLambda.index == null) {
+          var index = boundedVars.indexOf(varLambda.name!);
 
           if (index != -1) {
             // Bounded variable.
-            lambdaStack.last.index = index;
-          } else if ((index = freeVars.indexOf(lambdaStack.last.name!)) != -1) {
+            varLambda.index = index;
+          } else if ((index = freeVars.indexOf(varLambda.name!)) != -1) {
             // Free variable (appeared before).
-            lambdaStack.last.index = index + boundedVars.length;
+            varLambda.index = index + boundedVars.length;
           } else {
             // Free variable (first appearance).
-            lambdaStack.last.index = freeVars.length + boundedVars.length;
-            freeVars.add(lambdaStack.last.name!);
+            varLambda.index = freeVars.length + boundedVars.length;
+            freeVars.add(varLambda.name!);
           }
-        } else if (lambdaStack.last.name == null) {
-          var index = lambdaStack.last.index!;
+        } else if (varLambda.name == null) {
+          var index = varLambda.index!;
 
           if (index < boundedVars.length) {
             // Bounded variable.
-            lambdaStack.last.name = boundedVars[index];
+            varLambda.name = boundedVars[index];
           } else if (index - boundedVars.length < freeVars.length) {
-            lambdaStack.last.name = freeVars[index - boundedVars.length];
+            varLambda.name = freeVars[index - boundedVars.length];
           }
         }
 
-        resultStack.last = Lambda(
+        return Lambda(
           form: LambdaForm.variable,
-          index: lambdaStack.last.index,
-          name: lambdaStack.last.name,
+          index: varLambda.index,
+          name: varLambda.name,
         );
-        while (true) {
-          lambdaStack.removeLast();
-          if (lambdaStack.isEmpty) break;
-          var tempLambda = resultStack.removeLast();
-          if (resultStack.last.form == LambdaForm.abstraction) {
-            resultStack.last.exp1 = tempLambda;
-            isExp1Stack.removeLast();
-            boundedVars.removeAt(0);
-          } else if (isExp1Stack.last) {
-            resultStack.last.exp1 = tempLambda;
-            isExp1Stack.last = false;
-            lambdaStack.add(lambdaStack.last.exp2!);
-            resultStack.add(Lambda(form: LambdaForm.dummy));
-            break;
-          } else {
-            resultStack.last.exp2 = tempLambda;
-            isExp1Stack.removeLast();
-          }
-        }
-      } else if (lambdaStack.last.form == LambdaForm.abstraction) {
-        resultStack.last.form = LambdaForm.abstraction;
-        resultStack.last.name = lambdaStack.last.name;
-        boundedVars.insert(0, lambdaStack.last.name);
-        resultStack.add(Lambda(form: LambdaForm.dummy));
-        lambdaStack.add(lambdaStack.last.exp1!);
-        isExp1Stack.add(true);
-      } else {
-        resultStack.last.form = LambdaForm.application;
-        resultStack.add(Lambda(form: LambdaForm.dummy));
-        lambdaStack.add(lambdaStack.last.exp1!);
-        isExp1Stack.add(true);
-      }
-    }
-
-    assert(resultStack.length == 1);
-    return resultStack.first;
+      },
+      onAbsEnter: (_, __, name) {
+        boundedVars.insert(0, name);
+      },
+      onAbsExit: (_, __, ___) {
+        boundedVars.removeAt(0);
+      },
+      abstract: (lambda, [name]) => Lambda(
+        form: LambdaForm.abstraction,
+        name: name,
+        exp1: lambda,
+      ),
+      apply: ({required exp1, required exp2}) => Lambda(
+        form: LambdaForm.application,
+        exp1: exp1,
+        exp2: exp2,
+      ),
+    );
   }
 
   static LambdaBuilder _fromILambda(ILambda lambda) {

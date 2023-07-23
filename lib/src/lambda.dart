@@ -304,13 +304,14 @@ class Lambda implements ILambda<Lambda> {
   ///   parameter. Note that it visits both sub-expressions from left to right.
   /// - If the form is [LambdaForm.abstraction], call [onAbsEnter] before
   ///   visiting the sub-expression, and call [onAbsExit] after visiting the
-  ///   sub-expression. Both callbacks take the current parameter and the depth
-  ///   as arguments, and return a new value as the next parameter.
+  ///   sub-expression. Both callbacks take the current parameter, the depth,
+  ///   and the name of the abstraction parameter as arguments, and return a new
+  /// value as the next parameter.
   Lambda fmap<T>({
     required Lambda Function(Lambda varLambda, T? param, int depth) onVar,
     T? initialParam,
-    T? Function(T? param, int depth)? onAbsEnter,
-    T? Function(T? param, int depth)? onAbsExit,
+    T? Function(T? param, int depth, String? name)? onAbsEnter,
+    T? Function(T? param, int depth, String? name)? onAbsExit,
     T? Function(T? param, int depth, bool isLeft)? onAppEnter,
     T? Function(T? param, int depth, bool isLeft)? onAppExit,
   }) {

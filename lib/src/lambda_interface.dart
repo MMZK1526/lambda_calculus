@@ -29,8 +29,8 @@ abstract class ILambda<T> {
   static D fmap<S extends ILambda, D extends ILambda, T>({
     required D Function(S varLambda, T? param, int depth) onVar,
     T? initialParam,
-    T? Function(T? param, int depth)? onAbsEnter,
-    T? Function(T? param, int depth)? onAbsExit,
+    T? Function(T? param, int depth, String? name)? onAbsEnter,
+    T? Function(T? param, int depth, String? name)? onAbsExit,
     T? Function(T? param, int depth, bool isLeft)? onAppEnter,
     T? Function(T? param, int depth, bool isLeft)? onAppExit,
     required S initialLambda,
@@ -59,7 +59,7 @@ abstract class ILambda<T> {
             cur.first = false;
           }
         } else if (cur.third.form == LambdaForm.abstraction) {
-          param = onAbsEnter?.call(param, depth) ?? param;
+          param = onAbsEnter?.call(param, depth, cur.third.name) ?? param;
           depth += 1;
           lambdaStack.add(Triple(true, true, cur.third.exp1!));
           cur.first = false;
@@ -76,7 +76,7 @@ abstract class ILambda<T> {
             cur.third.name,
           ));
           depth -= 1;
-          param = onAbsExit?.call(param, depth) ?? param;
+          param = onAbsExit?.call(param, depth, cur.third.name) ?? param;
         } else {
           param = onAppExit?.call(param, depth, false) ?? param;
           final lambda2 = resultStack.removeLast();
