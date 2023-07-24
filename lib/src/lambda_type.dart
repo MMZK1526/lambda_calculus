@@ -161,10 +161,14 @@ class LambdaType {
       ..addAll(s2..removeWhere((key, _) => s1.containsKey(key)));
   }
 
+  /// Construct a [LambdaType] from a type variable.
+  ///
+  /// Note that we don't have type variable names, so we use indices instead.
   static LambdaType fromVar({required int index}) {
     return LambdaType._(isArrow: false, varIndex: index);
   }
 
+  /// Construct an arrow type [LambdaType] from two smaller [LambdaType]s.
   static LambdaType arrow({
     required LambdaType type1,
     required LambdaType type2,
