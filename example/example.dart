@@ -18,14 +18,13 @@ void main(List<String> arguments) {
   print('');
 
   print('PART II:  TYPED LAMBDA CALCULUS\n');
-  // TODO: Come up with more examples
 
   final l = r"\f. \g. \x. f (g x)".toLambda()!;
   print("The type for $l is ${l.findType()}");
   final m = r"\a. \b. \c. a c (b c)".toLambda()!;
   print("The type for $m is ${m.findType()}");
-
-  print(Lambda.constants.and().findType());
+  print("The type for ${Lambda.constants.and()} is "
+      "${Lambda.constants.and().findType()}");
 }
 
 void _printExamples() {

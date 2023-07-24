@@ -54,5 +54,3 @@ print(yCombinator.findType()); // null
 ```
 
 See [here](example/example.dart) for more examples.
-
-TODO: Improve the API documentation.
