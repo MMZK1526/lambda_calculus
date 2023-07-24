@@ -72,6 +72,10 @@ class Lambda implements ILambda<Lambda> {
 
   /// A string representation of the [Lambda] without redundant brackets.
   ///
+  /// It does its best to retain the original names of the variables, but in
+  /// case of name conflicts, it will choose a fresh variable that is guaranteed
+  /// to be different from all the other variables in the [Lambda] term.
+  ///
   /// Avoids recursion.
   @override
   String toString() {

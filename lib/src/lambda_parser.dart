@@ -39,14 +39,6 @@ extension ToLambdaExtension on String {
   ///   `2`, and `3` are the De Bruijn indices for `c`, `b`, and `a`.
   /// - If we are only using the De Bruijn indices, we can omit the variable
   ///   declaration: `λλλ2 (3 2 1)`.
-  ///
-  /// Lastly,when we print out a lambda term, the pretty-printer will do its
-  /// best to preserve the original names, but it may not be possible when there
-  /// are naming conflicts caused by beta-reduction. In this case, one may see
-  /// variable names such as `_x0` or `_y1`. While the parser is designed to
-  /// understand these special names, it is not recommended to use them in the
-  /// real input since they have special internal meanings. In the future, I
-  /// plan to generate legal fresh names to avoid this hole.
   Lambda? toLambda() {
     final tokens = _lambdaLexer(this);
     if (tokens == null) {
@@ -107,8 +99,6 @@ List<_LambdaToken>? _lambdaLexer(String str) {
   final alpha = RegExp(r'^[a-zA-Z]+$');
   final numeric = RegExp(r'^[0-9]+$');
   final alphanumeric = RegExp(r'^[a-zA-Z0-9]+$');
-  final xnumeric = RegExp(r'^_x[0-9]+([^a-zA-Z0-9]+|$)');
-  final ynumeric = RegExp(r'^_y[0-9]+([^a-zA-Z0-9]+|$)');
   final blank = RegExp(r'^[\r\n\t\v ]+$');
 
   while (iterator.moveNext()) {
@@ -183,30 +173,6 @@ List<_LambdaToken>? _lambdaLexer(String str) {
             if (!iterator.moveNext()) return null;
           }
 
-          // MARK: Depth Variables are not allowed here unless the depth is
-          // correct
-          if (ynumeric.hasMatch(str.substring(iterator.rawIndex))) {
-            return null;
-          }
-          if (xnumeric.hasMatch(str.substring(iterator.rawIndex))) {
-            iterator.moveNext();
-            iterator.moveNext();
-            var index = 0;
-            while (numeric.hasMatch(String.fromCharCode(iterator.current))) {
-              index *= 10;
-              index += int.parse(String.fromCharCode(iterator.current));
-              if (!iterator.moveNext()) {
-                break;
-              }
-            }
-            if (index == boundedVars.length + 1) {
-              tokens.add(_LambdaToken(_LambdaTokenType.lambda));
-              boundedVars.insert(0, '');
-              continue;
-            }
-            return null;
-          }
-
           // MARK: Explicit Variable
           if (alphanumeric.hasMatch(String.fromCharCode(iterator.current))) {
             while (
@@ -252,36 +218,6 @@ List<_LambdaToken>? _lambdaLexer(String str) {
       default:
         // MARK: Ignore Space
         if (blank.hasMatch(String.fromCharCode(iterator.current))) break;
-
-        // MARK: Depth Variable
-        if (xnumeric.hasMatch(str.substring(iterator.rawIndex)) ||
-            ynumeric.hasMatch(str.substring(iterator.rawIndex))) {
-          iterator.moveNext();
-          final isFree = String.fromCharCode(iterator.current) == 'y';
-          iterator.moveNext();
-          var index = 0;
-          while (numeric.hasMatch(String.fromCharCode(iterator.current))) {
-            index *= 10;
-            index += int.parse(String.fromCharCode(iterator.current));
-            if (!iterator.moveNext()) break;
-          }
-          if (!isFree && index > boundedVars.length) return null;
-          tokens.add(_LambdaToken(
-            _LambdaTokenType.variable,
-            index: isFree
-                ? boundedVars.length + index - 1
-                : boundedVars.length - index,
-          ));
-
-          // MARK: Space if Necessary
-          if (iterator.current >= 0 &&
-              (blank.hasMatch(String.fromCharCode(iterator.current)) ||
-                  String.fromCharCode(iterator.current) == '(')) {
-            tokens.add(_LambdaToken(_LambdaTokenType.space));
-          }
-          iterator.movePrevious();
-          break;
-        }
 
         // MARK: Named Variable
         if (alpha.hasMatch(String.fromCharCode(iterator.current))) {

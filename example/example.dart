@@ -94,38 +94,17 @@ void _parseLambda() {
   print('    original: $str');
   print('    parsed:   $temp');
 
-  // We can use the shorthand _x{n} to represent the variable declared at depth
-  // n in the current scope. Similarly, _y{n} can be used to represent anonymous
-  // free variables.
-  print('6. Same as before, but use explicit depth:');
-  str = 'λ. λ. _x1 (_x1 _x2)';
-  temp = str.toLambda();
-  print('    original: $str');
-  print('    parsed:   $temp');
-
-  // Since _x{n} (and _y{n}) has the special semantics mentioned above, they can
-  // be used only if the depth is correct. It is not recommended to write these
-  // variables, but we can safely copy a printed lambda term that contains the
-  // underscore notations.
-  print('7. Invalid abstraction using _x2');
-  str = 'λ_x2. _x1';
-  temp = str.toLambda();
-  print('    original: $str');
-  print('    parsed:   $temp');
-  print('');
-
   // If the same variable name has been defined more than once, each usage is
   // bounded to the closest definition.
-  print('7. λx. λx. x is the same as λx. λy. y');
+  print('6. λx. λx. x is the same as λx. λy. y');
   str = 'λx. λx. x';
   temp = str.toLambda();
   print('    original:             $str');
   print('    parsed without names: ${temp!.toStringNameless()}');
-  print('');
 
   /// For nested abstractions, we can omit the lambda symbol for the inner
   /// abstractions.
-  print('8. λx y z. x y z is the same as λx. λy. λz. x y z');
+  print('7. λx y z. x y z is the same as λx. λy. λz. x y z');
   str = 'λx y z. x y z';
   temp = str.toLambda();
   print('    original:             $str');
