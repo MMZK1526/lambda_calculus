@@ -71,10 +71,16 @@ void main() {
 
   test('Lambda Parse Test', () {
     expect(
-      r'\x1. (λx2. x1 (λx3. x2 x2 x3)) (λx2. x1 (λ. x2 x2 0))'.toLambda(),
+      r'/x1. (λx2. x1 (λx3. x2 x2 x3)) (λx2 -> x1 (λ. x2 x2 0))'.toLambda(),
       Lambda.constants.yCombinator(),
     );
     expect(r'\_x1. _x1'.toLambda(), Lambda.constants.identity());
+    expect(r'\x y -> x (x y)'.toLambda(), 2.toChurchNumber());
+    expect(r'\.\-> 1 (1 0)'.toLambda(), 2.toChurchNumber());
+    expect(r'\x y -> x (x y'.toLambda(), null);
+    expect(r'\x y -> x x y)'.toLambda(), null);
+    expect(r'\x y'.toLambda(), null);
+    expect(r'\_x1 _x1'.toLambda(), null);
     expect(r'\_x2. _x1'.toLambda(), null);
     expect(r'((x1 (\x2. x2))'.toLambda(), null);
   });

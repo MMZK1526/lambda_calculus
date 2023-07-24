@@ -123,6 +123,15 @@ void _parseLambda() {
   print('    original:             $str');
   print('    parsed without names: ${temp!.toStringNameless()}');
   print('');
+
+  /// For nested abstractions, we can omit the lambda symbol for the inner
+  /// abstractions.
+  print('8. λx y z. x y z is the same as λx. λy. λz. x y z');
+  str = 'λx y z. x y z';
+  temp = str.toLambda();
+  print('    original:             $str');
+  print('    parsed without names: $temp');
+  print('');
 }
 
 void _countFreeVars() {

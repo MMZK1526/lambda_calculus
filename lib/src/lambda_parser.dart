@@ -151,32 +151,9 @@ List<_LambdaToken>? _lambdaLexer(String str) {
 
         // MARK: Ignore Space
         while (blank.hasMatch(String.fromCharCode(iterator.current))) {
-          if (!iterator.moveNext()) return null;
-        }
-
-        // Determine the name of the variable.
-        final tempVarBuffer = StringBuffer();
-
-        // MARK: Depth Variables are not allowed here unless the depth is
-        // correct
-        if (ynumeric.hasMatch(str.substring(iterator.rawIndex))) {
-          return null;
-        }
-        if (xnumeric.hasMatch(str.substring(iterator.rawIndex))) {
-          iterator.moveNext();
-          iterator.moveNext();
-          var index = 0;
-          while (numeric.hasMatch(String.fromCharCode(iterator.current))) {
-            index *= 10;
-            index += int.parse(String.fromCharCode(iterator.current));
-            if (!iterator.moveNext()) break;
+          if (!iterator.moveNext()) {
+            return null;
           }
-          if (index == boundedVars.length + 1) {
-            tokens.add(_LambdaToken(_LambdaTokenType.lambda));
-            boundedVars.insert(0, '');
-            break;
-          }
-          return null;
         }
 
         // MARK: Anonymous Variable
@@ -186,43 +163,91 @@ List<_LambdaToken>? _lambdaLexer(String str) {
           break;
         }
         if (String.fromCharCode(iterator.current) == '-') {
-          if (!iterator.moveNext()) return null;
-          if (String.fromCharCode(iterator.current) != '>') return null;
+          if (!iterator.moveNext()) {
+            return null;
+          }
+          if (String.fromCharCode(iterator.current) != '>') {
+            return null;
+          }
           tokens.add(_LambdaToken(_LambdaTokenType.lambda));
+          boundedVars.insert(0, '');
           break;
         }
 
-        // MARK: Explicit Variable
-        while (alphanumeric.hasMatch(String.fromCharCode(iterator.current))) {
-          tempVarBuffer.write(String.fromCharCode(iterator.current));
-          if (!iterator.moveNext()) return null;
+        while (true) {
+          // Determine the name of the variable.
+          final tempVarBuffer = StringBuffer();
+
+          // MARK: Ignore Space
+          while (blank.hasMatch(String.fromCharCode(iterator.current))) {
+            if (!iterator.moveNext()) return null;
+          }
+
+          // MARK: Depth Variables are not allowed here unless the depth is
+          // correct
+          if (ynumeric.hasMatch(str.substring(iterator.rawIndex))) {
+            return null;
+          }
+          if (xnumeric.hasMatch(str.substring(iterator.rawIndex))) {
+            iterator.moveNext();
+            iterator.moveNext();
+            var index = 0;
+            while (numeric.hasMatch(String.fromCharCode(iterator.current))) {
+              index *= 10;
+              index += int.parse(String.fromCharCode(iterator.current));
+              if (!iterator.moveNext()) {
+                break;
+              }
+            }
+            if (index == boundedVars.length + 1) {
+              tokens.add(_LambdaToken(_LambdaTokenType.lambda));
+              boundedVars.insert(0, '');
+              continue;
+            }
+            return null;
+          }
+
+          // MARK: Explicit Variable
+          if (alphanumeric.hasMatch(String.fromCharCode(iterator.current))) {
+            while (
+                alphanumeric.hasMatch(String.fromCharCode(iterator.current))) {
+              tempVarBuffer.write(String.fromCharCode(iterator.current));
+              if (!iterator.moveNext()) {
+                return null;
+              }
+            }
+            final tempVar = tempVarBuffer.toString();
+            tokens.add(_LambdaToken(_LambdaTokenType.lambda, name: tempVar));
+            boundedVars.insert(0, tempVar);
+            continue;
+          }
+
+          break;
         }
 
         // MARK: Ignore Space
         while (blank.hasMatch(String.fromCharCode(iterator.current))) {
-          if (!iterator.moveNext()) return null;
+          if (!iterator.moveNext()) {
+            return null;
+          }
         }
 
         var hasDot = false;
         if (String.fromCharCode(iterator.current) == '.') {
-          if (!iterator.moveNext()) return null;
           hasDot = true;
-        }
-        if (String.fromCharCode(iterator.current) == '-') {
-          if (!iterator.moveNext()) return null;
-          if (String.fromCharCode(iterator.current) != '>') return null;
-          if (!iterator.moveNext()) return null;
+        } else if (String.fromCharCode(iterator.current) == '-') {
+          if (!iterator.moveNext()) {
+            return null;
+          }
+          if (String.fromCharCode(iterator.current) != '>') {
+            return null;
+          }
           hasDot = true;
         }
         if (!hasDot) {
           return null;
         }
 
-        iterator.movePrevious();
-
-        final tempVar = tempVarBuffer.toString();
-        tokens.add(_LambdaToken(_LambdaTokenType.lambda, name: tempVar));
-        boundedVars.insert(0, tempVar);
         break;
       default:
         // MARK: Ignore Space

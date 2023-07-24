@@ -6,6 +6,8 @@
   2. Allow spaces between the lambda symbol and the variable, *e.g.* `λ x -> x`
      is now allowed. It was already allowed according to the previous
       documentation, but the implementation was not consistent.
+  3. Allow inner abstractions to be omitted, *e.g.* `λx. λy. x y` can be
+     written as `λx y. x y`.
 
 -- Fix bugs in the parser.
 
