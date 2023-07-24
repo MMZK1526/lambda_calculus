@@ -1,3 +1,16 @@
+## 1.3.0 (Unreleased)
+
+-- Modify the parsing syntax:
+  1. Stop allowing abstractions without delimiters, *e.g.* `λx x` is not allowed
+     anymore, use `λx. x` or `λx -> x` instead.
+  2. Allow spaces between the lambda symbol and the variable, *e.g.* `λ x -> x`
+     is now allowed. It was already allowed according to the previous
+      documentation, but the implementation was not consistent.
+
+-- Fix bugs in the parser.
+
+-- More documentation.
+
 ## 1.2.0
 
 - Change the signature of `fmap` so that "non-leaf" callbacks no longer have access

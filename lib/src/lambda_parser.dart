@@ -13,7 +13,7 @@ extension ToLambdaExtension on String {
   /// ```
   /// <lambda> ::= <variable> | <abstraction> | <application>
   /// <variable> ::= <identifier> | <de-bruijn-index>
-  /// <abstraction> ::= <lambda-symbol> [<variable>] [<dot-symbol>] <lambda>
+  /// <abstraction> ::= <lambda-symbol> [<variable>] <dot-symbol> <lambda>
   /// <application> ::= <lambda> <lambda>
   /// <lambda-symbol> ::= (λ|/|\\) -- lambda, slash, or backslash
   /// <dot-symbol> ::= (\.) | (->) -- A single dot or an arrow
@@ -34,7 +34,7 @@ extension ToLambdaExtension on String {
   ///   variable.
   /// - Use other symbols for "λ": `/a.\\b./c.b(a b c)`, we support slash and
   ///   backslash as well.
-  /// - Omit the dot, or changing it to an arrow: `λaλb -> λc b (a b c)`.
+  /// - Changing the doc to an arrow: `λa -> λb -> λc b (a b c)`.
   /// - Use De Bruijn indices for variables: `λa. λb. λc. 2 (3 2 1)`. Here `1`,
   ///   `2`, and `3` are the De Bruijn indices for `c`, `b`, and `a`.
   /// - If we are only using the De Bruijn indices, we can omit the variable
@@ -127,11 +127,17 @@ List<_LambdaToken>? _lambdaLexer(String str) {
         // Remove out-of-scope variables.
         boundedVars.removeRange(0, bracketStack.removeLast());
         tokens.add(_LambdaToken(_LambdaTokenType.rbrace));
-        // MARK: Space if Necessary
+        // MARK: Ignore Space
         if (iterator.moveNext()) {
           if (blank.hasMatch(String.fromCharCode(iterator.current)) ||
               String.fromCharCode(iterator.current) != ')') {
-            tokens.add(_LambdaToken(_LambdaTokenType.space));
+            while (blank.hasMatch(String.fromCharCode(iterator.current))) {
+              if (!iterator.moveNext()) break;
+            }
+            if (iterator.current != -1 &&
+                String.fromCharCode(iterator.current) != ')') {
+              tokens.add(_LambdaToken(_LambdaTokenType.space));
+            }
           }
           iterator.movePrevious();
         }
@@ -142,6 +148,12 @@ List<_LambdaToken>? _lambdaLexer(String str) {
       case r'\':
         bracketStack.last++;
         if (!iterator.moveNext()) return null;
+
+        // MARK: Ignore Space
+        while (blank.hasMatch(String.fromCharCode(iterator.current))) {
+          if (!iterator.moveNext()) return null;
+        }
+
         // Determine the name of the variable.
         final tempVarBuffer = StringBuffer();
 
@@ -176,12 +188,7 @@ List<_LambdaToken>? _lambdaLexer(String str) {
         if (String.fromCharCode(iterator.current) == '-') {
           if (!iterator.moveNext()) return null;
           if (String.fromCharCode(iterator.current) != '>') return null;
-          break;
-        }
-        if (!alpha.hasMatch(String.fromCharCode(iterator.current))) {
           tokens.add(_LambdaToken(_LambdaTokenType.lambda));
-          boundedVars.insert(0, '');
-          iterator.movePrevious();
           break;
         }
 
@@ -195,13 +202,20 @@ List<_LambdaToken>? _lambdaLexer(String str) {
         while (blank.hasMatch(String.fromCharCode(iterator.current))) {
           if (!iterator.moveNext()) return null;
         }
+
+        var hasDot = false;
         if (String.fromCharCode(iterator.current) == '.') {
           if (!iterator.moveNext()) return null;
+          hasDot = true;
         }
         if (String.fromCharCode(iterator.current) == '-') {
           if (!iterator.moveNext()) return null;
           if (String.fromCharCode(iterator.current) != '>') return null;
           if (!iterator.moveNext()) return null;
+          hasDot = true;
+        }
+        if (!hasDot) {
+          return null;
         }
 
         iterator.movePrevious();
@@ -346,7 +360,7 @@ Lambda? _lambdaParser(List<_LambdaToken> tokens) {
         varStack.add(token.name);
         break;
       // MARK: Application
-      // Has hitghes precedence.
+      // Has highest precedence.
       case _LambdaTokenType.space:
         while (opStack.last == _LambdaTokenType.space) {
           opStack.removeLast();
