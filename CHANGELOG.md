@@ -1,4 +1,4 @@
-## 1.2.0 (unreleased)
+## 1.2.0
 
 - Change the signature of `fmap` so that "non-leaf" callbacks no longer have access
   to the term itself. This is because previous usage of this term is not consistent.
@@ -13,6 +13,8 @@
 - Make `Lambda` final.
 
 - Remove dependency on `dartz`.
+
+- More tests.
 
 ## 1.1.1
 
