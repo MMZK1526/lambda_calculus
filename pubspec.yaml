@@ -8,7 +8,6 @@ repository: https://github.com/MMZK1526/lambda_calculus
 environment:
   sdk: ^3.0.3
 
-# Add regular dependencies here.
 dependencies:
   collection: ^1.17.2
 
