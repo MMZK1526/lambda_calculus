@@ -1,9 +1,7 @@
 # Avoid committing pubspec.lock for library packages; see
 # https://dart.dev/guides/libraries/private-files#pubspeclock.
 pubspec.lock
-example/.DS_Store
-lib/.DS_Store
-test/.DS_Store
+.DS_Store
 build/
 .dart_tool/
 doc/
