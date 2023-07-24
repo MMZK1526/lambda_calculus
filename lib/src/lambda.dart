@@ -82,6 +82,8 @@ class Lambda implements ILambda<Lambda> {
     final boundVariables = <_LambdaFragment>[];
     final variableDepths = <String, List<int>>{};
     int depth = 0;
+    final freshName = Solo<String>('[FRESH_VAR]');
+    final usedVars = <String>{};
 
     while (lambdaStack.isNotEmpty) {
       final cur = lambdaStack.last;
@@ -121,7 +123,11 @@ class Lambda implements ILambda<Lambda> {
             isLeftParen = true;
           }
           depth += 1;
-          final fragment = _LambdaFragment(name: cur.third.name, depth: depth);
+          final fragment = _LambdaFragment(
+            name: cur.third.name,
+            depth: depth,
+            freshName: freshName,
+          );
           boundVariables.add(fragment);
           if (cur.third.name != null) {
             variableDepths.update(
@@ -129,6 +135,7 @@ class Lambda implements ILambda<Lambda> {
               (value) => value..add(depth),
               ifAbsent: () => [depth],
             );
+            usedVars.add(cur.third.name!);
           }
           sb.add(fragment);
           useBracesStack.add(false);
@@ -146,9 +153,12 @@ class Lambda implements ILambda<Lambda> {
             sb.add(cur.third.name!);
           } else if (curIndex > 0) {
             boundVariables[curIndex - 1].name = null;
-            sb.add('_x$curIndex');
+            sb.add(freshName);
+            sb.add(curIndex);
           } else {
-            sb.add('_y${1 - curIndex}');
+            sb.add('y');
+            sb.add(freshName);
+            sb.add(1 - curIndex);
           }
           isLeftParen = null;
           lambdaStack.removeLast();
@@ -192,6 +202,8 @@ class Lambda implements ILambda<Lambda> {
         }
       }
     }
+
+    freshName.value = _findFreshVariable(usedVars);
 
     return sb.map((e) => e.toString()).join();
   }
@@ -373,7 +385,7 @@ class Lambda implements ILambda<Lambda> {
       );
 
   /// A string representation of the [Lambda] without redundant brackets and
-  /// ignores custom names (so that all variables are in the form of `x{n}` or
+  /// ignoring custom names (so that all variables are in the form of `x{n}` or
   /// `y{n}`).
   ///
   /// Avoids recursion.
@@ -423,7 +435,7 @@ class Lambda implements ILambda<Lambda> {
             isLeftParen = true;
           }
           depth += 1;
-          sb.write('λ_x$depth.');
+          sb.write('λx$depth.');
           useBracesStack.add(false);
           lambdaStack.add(Triple(true, true, cur.third.exp1!));
           isLeftParen = false;
@@ -434,9 +446,9 @@ class Lambda implements ILambda<Lambda> {
             sb.write(' ');
           }
           if (curIndex > 0) {
-            sb.write('_x$curIndex');
+            sb.write('x$curIndex');
           } else {
-            sb.write('_y${1 - curIndex}');
+            sb.write('y${1 - curIndex}');
           }
           isLeftParen = null;
           lambdaStack.removeLast();
@@ -482,12 +494,68 @@ class Lambda implements ILambda<Lambda> {
 }
 
 class _LambdaFragment {
-  _LambdaFragment({this.name, required this.depth});
+  _LambdaFragment({this.name, required this.depth, required this.freshName});
 
   String? name;
 
   int depth;
 
+  Solo<String> freshName;
+
   @override
-  String toString() => name != null ? 'λ$name.' : 'λ_x$depth.';
+  int get hashCode => name.hashCode * 31 + depth.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      other is _LambdaFragment && name == other.name && depth == other.depth;
+
+  @override
+  String toString() => name != null ? 'λ$name.' : 'λ${freshName.value}$depth.';
+}
+
+String _findFreshVariable(Set<String> usedNames) {
+  var index = 0;
+  var namesToBeRemoved = <String>{};
+  var usedChars = <String>{}; // a-z
+  var curFreshNameSB = StringBuffer();
+  while (true) {
+    namesToBeRemoved = <String>{};
+    usedChars = <String>{};
+
+    for (final name in usedNames) {
+      if (index >= name.length) {
+        namesToBeRemoved.add(name);
+        continue;
+      }
+
+      usedChars.add(name[index]);
+    }
+
+    if (!usedChars.contains("x")) {
+      curFreshNameSB.write("x");
+      break;
+    }
+
+    bool flag = false;
+    for (final char in [
+      'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', //
+      'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', //
+      'u', 'v', 'w', 'y', 'z'
+    ]) {
+      if (!usedChars.contains(char)) {
+        curFreshNameSB.write(char);
+        flag = true;
+        break;
+      }
+    }
+
+    if (flag) {
+      break;
+    }
+
+    curFreshNameSB.write("x");
+    index += 1;
+  }
+
+  return curFreshNameSB.toString();
 }
