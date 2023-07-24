@@ -109,8 +109,6 @@ extension LamdbaTypeExtension on Lambda {
             LambdaType.compose(s1, LambdaType.compose(term2.key, term1.key))!,
             freshType.substitute(s1)!,
           );
-        case LambdaForm.dummy:
-          return null;
       }
     }
 

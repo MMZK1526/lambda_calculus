@@ -74,8 +74,6 @@ class Lambda implements ILambda<Lambda> {
   /// Avoids recursion.
   @override
   String toString() {
-    if (form == LambdaForm.dummy) return '[DUMMY]';
-
     final sb = <Object>[];
     bool? isLeftParen = true;
     final lambdaStack = <Triple<bool, bool, Lambda>>[Triple(true, true, this)];
@@ -379,8 +377,6 @@ class Lambda implements ILambda<Lambda> {
   ///
   /// Avoids recursion.
   String toStringNameless() {
-    if (form == LambdaForm.dummy) return '[DUMMY]';
-
     final sb = StringBuffer();
     bool? isLeftParen = true;
     final lambdaStack = <Triple<bool, bool, Lambda>>[Triple(true, true, this)];

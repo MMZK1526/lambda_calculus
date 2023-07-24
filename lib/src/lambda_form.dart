@@ -5,5 +5,4 @@ enum LambdaForm {
   variable,
   application,
   abstraction,
-  dummy,
 }
