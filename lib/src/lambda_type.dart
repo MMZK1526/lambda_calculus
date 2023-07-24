@@ -289,10 +289,10 @@ class LambdaType {
     );
   }
 
-  /// TODO: avoid recursion
-  ///
   /// Unify `this` with the given [LambdaType], returning a substitution if
   /// possible.
+  ///
+  /// TODO: avoid recursion
   Map<int, LambdaType>? unify(LambdaType? other) {
     if (other == null) {
       return null;

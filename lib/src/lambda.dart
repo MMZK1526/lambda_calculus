@@ -18,6 +18,7 @@ import 'package:lambda_calculus/src/utilities.dart';
 /// See the documentation for [ToLambdaExtension] and [LambdaBuilder] for more
 /// information on how to create lambda expressions.
 class Lambda implements ILambda<Lambda> {
+  /// Do not use the constructor directly. Use [LambdaBuilder] instead.
   const Lambda({
     required this.form,
     this.index, // For variable
