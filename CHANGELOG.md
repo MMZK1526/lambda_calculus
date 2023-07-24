@@ -12,6 +12,8 @@
 
 - Make `Lambda` final.
 
+- Remove dependency on `dartz`.
+
 ## 1.1.1
 
 - Better documentation.
