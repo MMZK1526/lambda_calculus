@@ -26,7 +26,7 @@ import 'package:lambda_calculus/src/lambda.dart';
 /// to construct a variable, and the class will eventually do the necessary
 /// calculation for the De Bruijn index.
 class LambdaBuilder implements ILambda<LambdaBuilder> {
-  LambdaBuilder._({
+  const LambdaBuilder._({
     required this.form,
     this.index, // For variable
     this.name,
@@ -45,19 +45,19 @@ class LambdaBuilder implements ILambda<LambdaBuilder> {
                 (index != null || exp1 == null || exp2 != null)));
 
   @override
-  LambdaForm form;
+  final LambdaForm form;
 
   @override
-  int? index;
+  final int? index;
 
   @override
-  String? name;
+  final String? name;
 
   @override
-  LambdaBuilder? exp1;
+  final LambdaBuilder? exp1;
 
   @override
-  LambdaBuilder? exp2;
+  final LambdaBuilder? exp2;
 
   /// Access the [LambdaBuilderConstants] instance which provides common
   /// constants and combinators.
@@ -159,18 +159,20 @@ class LambdaBuilder implements ILambda<LambdaBuilder> {
     return ILambda.fmap<LambdaBuilder, Lambda, void>(
       initialLambda: this,
       onVar: (varLambda, _, __) {
+        var varLambdaIndex = varLambda.index;
+        var varLambdaName = varLambda.name;
         if (varLambda.index == null) {
           var index = boundedVars.indexOf(varLambda.name!);
 
           if (index != -1) {
             // Bounded variable.
-            varLambda.index = index;
+            varLambdaIndex = index;
           } else if ((index = freeVars.indexOf(varLambda.name!)) != -1) {
             // Free variable (appeared before).
-            varLambda.index = index + boundedVars.length;
+            varLambdaIndex = index + boundedVars.length;
           } else {
             // Free variable (first appearance).
-            varLambda.index = freeVars.length + boundedVars.length;
+            varLambdaIndex = freeVars.length + boundedVars.length;
             freeVars.add(varLambda.name!);
           }
         } else if (varLambda.name == null) {
@@ -178,16 +180,16 @@ class LambdaBuilder implements ILambda<LambdaBuilder> {
 
           if (index < boundedVars.length) {
             // Bounded variable.
-            varLambda.name = boundedVars[index];
+            varLambdaName = boundedVars[index];
           } else if (index - boundedVars.length < freeVars.length) {
-            varLambda.name = freeVars[index - boundedVars.length];
+            varLambdaName = freeVars[index - boundedVars.length];
           }
         }
 
         return Lambda(
           form: LambdaForm.variable,
-          index: varLambda.index,
-          name: varLambda.name,
+          index: varLambdaIndex,
+          name: varLambdaName,
         );
       },
       onAbsEnter: (_, __, name) {
