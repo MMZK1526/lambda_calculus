@@ -129,7 +129,8 @@ void _countFreeVars() {
   Lambda temp;
 
   temp = r'(\x. \y. x c) (\a. \b. c a (\d \c. a c d))'.toLambda()!;
-  print(temp.freeCount(countDistinct: true));
+  print('Lambda: $temp');
+  print('Number of free vars: ${temp.freeCount(countDistinct: true)}');
   print('');
 }
 

@@ -1,5 +1,6 @@
 import 'package:lambda_calculus/src/lambda.dart';
 import 'package:lambda_calculus/src/lambda_form.dart';
+import 'package:lambda_calculus/src/utilities.dart';
 
 /// The evaluation strategies for lambda calculus.
 ///
@@ -78,122 +79,125 @@ extension LambdaEvaluationExtension on Lambda {
   }) {
     switch (evalType) {
       case LambdaEvaluationType.fullReduction:
-        final lambdaStack = [clone()];
-        final isExp1Stack = [true];
+        final lambdaStack = [Pair(true, this)];
+        final resultStack = <Lambda>[];
         var isReduced = false;
-        Lambda? result;
+
         while (lambdaStack.isNotEmpty) {
-          if (lambdaStack.last.form == LambdaForm.variable || isReduced) {
-            while (true) {
-              final temp = lambdaStack.removeLast();
-              if (lambdaStack.isEmpty) {
-                result = temp;
-                break;
-              }
-              if (lambdaStack.last.form == LambdaForm.abstraction) {
-                lambdaStack.last.exp1 = temp;
-                isExp1Stack.removeLast();
-              } else if (isExp1Stack.last) {
-                lambdaStack.last.exp1 = temp;
-                lambdaStack.add(lambdaStack.last.exp2!);
-                isExp1Stack.last = false;
-                break;
-              } else {
-                lambdaStack.last.exp2 = temp;
-                isExp1Stack.removeLast();
-              }
-            }
-          } else if (lambdaStack.last.form == LambdaForm.abstraction) {
-            lambdaStack.add(lambdaStack.last.exp1!);
-            isExp1Stack.add(true);
-          } else {
-            if (lambdaStack.last.exp1!.form == LambdaForm.abstraction) {
-              lambdaStack.last = lambdaStack.last._betaReduction();
-              isReduced = true;
+          final cur = lambdaStack.last;
+          if (cur.first) {
+            if (isReduced || cur.second.form == LambdaForm.variable) {
+              resultStack.add(cur.second);
+              lambdaStack.removeLast();
+            } else if (cur.second.form == LambdaForm.abstraction) {
+              lambdaStack.add(Pair(true, cur.second.exp1!));
+              cur.first = false;
             } else {
-              lambdaStack.add(lambdaStack.last.exp1!);
-              isExp1Stack.add(true);
+              if (cur.second.exp1!.form == LambdaForm.abstraction) {
+                resultStack.add(cur.second._betaReduction());
+                isReduced = true;
+                lambdaStack.removeLast();
+              } else {
+                lambdaStack.add(Pair(true, cur.second.exp2!));
+                lambdaStack.add(Pair(true, cur.second.exp1!));
+                cur.first = false;
+              }
             }
+          } else {
+            if (cur.second.form == LambdaForm.application) {
+              final lambda2 = resultStack.removeLast();
+              final lambda1 = resultStack.removeLast();
+              resultStack.add(Lambda(
+                form: LambdaForm.application,
+                exp1: lambda1,
+                exp2: lambda2,
+              ));
+            } else {
+              final lambda = resultStack.removeLast();
+              resultStack.add(Lambda(
+                form: LambdaForm.abstraction,
+                exp1: lambda,
+                name: cur.second.name,
+              ));
+            }
+            lambdaStack.removeLast();
           }
         }
 
-        if (isReduced) return result!;
+        if (isReduced) return resultStack.first;
         break;
       case LambdaEvaluationType.callByName:
-        final lambdaStack = [clone()];
-        final isExp1Stack = [true];
+        final lambdaStack = [Pair(true, this)];
+        final resultStack = <Lambda>[];
         var isReduced = false;
-        Lambda? result;
+
         while (lambdaStack.isNotEmpty) {
-          if (lambdaStack.last.form != LambdaForm.application || isReduced) {
-            while (true) {
-              final temp = lambdaStack.removeLast();
-              if (lambdaStack.isEmpty) {
-                result = temp;
-                break;
-              }
-              if (isExp1Stack.last) {
-                lambdaStack.last.exp1 = temp;
-                lambdaStack.add(lambdaStack.last.exp2!);
-                isExp1Stack.last = false;
-                break;
+          final cur = lambdaStack.last;
+          if (cur.first) {
+            if (isReduced || cur.second.form != LambdaForm.application) {
+              resultStack.add(cur.second);
+              lambdaStack.removeLast();
+            } else {
+              if (cur.second.exp1!.form == LambdaForm.abstraction) {
+                resultStack.add(cur.second._betaReduction());
+                isReduced = true;
+                lambdaStack.removeLast();
               } else {
-                lambdaStack.last.exp2 = temp;
-                isExp1Stack.removeLast();
+                lambdaStack.add(Pair(true, cur.second.exp2!));
+                lambdaStack.add(Pair(true, cur.second.exp1!));
+                cur.first = false;
               }
             }
           } else {
-            if (lambdaStack.last.exp1!.form == LambdaForm.abstraction) {
-              lambdaStack.last = lambdaStack.last._betaReduction();
-              isReduced = true;
-            } else {
-              lambdaStack.add(lambdaStack.last.exp1!);
-              isExp1Stack.add(true);
-            }
+            final lambda2 = resultStack.removeLast();
+            final lambda1 = resultStack.removeLast();
+            resultStack.add(Lambda(
+              form: LambdaForm.application,
+              exp1: lambda1,
+              exp2: lambda2,
+            ));
+            lambdaStack.removeLast();
           }
         }
 
-        if (isReduced) return result!;
+        if (isReduced) return resultStack.first;
         break;
       case LambdaEvaluationType.callByValue:
-        final lambdaStack = [clone()];
-        final isExp1Stack = [true];
+        final lambdaStack = [Pair(true, this)];
+        final resultStack = <Lambda>[];
         var isReduced = false;
-        Lambda? result;
+
         while (lambdaStack.isNotEmpty) {
-          if (lambdaStack.last.form != LambdaForm.application || isReduced) {
-            while (true) {
-              final temp = lambdaStack.removeLast();
-              if (lambdaStack.isEmpty) {
-                result = temp;
-                break;
-              }
-              if (isExp1Stack.last) {
-                lambdaStack.last.exp1 = temp;
-                lambdaStack.add(lambdaStack.last.exp2!);
-                isExp1Stack.last = false;
-                break;
+          final cur = lambdaStack.last;
+          if (cur.first) {
+            if (isReduced || cur.second.form != LambdaForm.application) {
+              resultStack.add(cur.second);
+              lambdaStack.removeLast();
+            } else {
+              if (cur.second.exp1!.form == LambdaForm.abstraction &&
+                  cur.second.exp2!.form != LambdaForm.application) {
+                resultStack.add(cur.second._betaReduction());
+                isReduced = true;
+                lambdaStack.removeLast();
               } else {
-                lambdaStack.last.exp2 = temp;
-                isExp1Stack.removeLast();
+                lambdaStack.add(Pair(true, cur.second.exp2!));
+                lambdaStack.add(Pair(true, cur.second.exp1!));
+                cur.first = false;
               }
             }
           } else {
-            if (lambdaStack.last.exp1!.form == LambdaForm.abstraction &&
-                lambdaStack.last.exp2!.form != LambdaForm.application) {
-              lambdaStack.last = lambdaStack.last._betaReduction();
-              isReduced = true;
-            } else if (lambdaStack.last.exp1!.form != LambdaForm.abstraction) {
-              lambdaStack.add(lambdaStack.last.exp1!);
-              isExp1Stack.add(true);
-            } else {
-              lambdaStack.add(lambdaStack.last.exp2!);
-              isExp1Stack.add(false);
-            }
+            final lambda2 = resultStack.removeLast();
+            final lambda1 = resultStack.removeLast();
+            resultStack.add(Lambda(
+              form: LambdaForm.application,
+              exp1: lambda1,
+              exp2: lambda2,
+            ));
+            lambdaStack.removeLast();
           }
         }
 
-        if (isReduced) return result!;
+        if (isReduced) return resultStack.first;
         break;
     }
     return null;
