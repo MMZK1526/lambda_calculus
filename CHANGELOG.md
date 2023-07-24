@@ -10,6 +10,8 @@
 
 - Fix typos in documentation.
 
+- Make `Lambda` final.
+
 ## 1.1.1
 
 - Better documentation.

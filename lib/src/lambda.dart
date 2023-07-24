@@ -18,7 +18,7 @@ import 'package:lambda_calculus/src/utilities.dart';
 /// See the documentation for [ToLambdaExtension] and [LambdaBuilder] for more
 /// information on how to create lambda expressions.
 class Lambda implements ILambda<Lambda> {
-  Lambda({
+  const Lambda({
     required this.form,
     this.index, // For variable
     this.name,
@@ -44,10 +44,10 @@ class Lambda implements ILambda<Lambda> {
   final String? name;
 
   @override
-  Lambda? exp1;
+  final Lambda? exp1;
 
   @override
-  Lambda? exp2;
+  final Lambda? exp2;
 
   /// Access the [LambdaConstants] instance which provides common constants and
   /// combinators.
