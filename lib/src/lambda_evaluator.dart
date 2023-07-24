@@ -180,7 +180,7 @@ extension LambdaEvaluationExtension on Lambda {
             }
           } else {
             if (lambdaStack.last.exp1!.form == LambdaForm.abstraction &&
-                lambdaStack.last.exp2!.form == LambdaForm.abstraction) {
+                lambdaStack.last.exp2!.form != LambdaForm.application) {
               lambdaStack.last = lambdaStack.last._betaReduction();
               isReduced = true;
             } else if (lambdaStack.last.exp1!.form != LambdaForm.abstraction) {
