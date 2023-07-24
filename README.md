@@ -47,7 +47,7 @@ final fullReductionResult = twoTimesThree.eval(LambdaEvaluationType.fullReductio
 print(fullReductionResult); // Same as `LambdaConstants.lambdaSix` or `6.toChurchNumber()`
 
 // Find the type of a lambda expression;
-final term = r'\x \y. x y'.toLambda()!;
+final term = r'\x. \y. x y'.toLambda()!;
 print(term.findType()); // (t1 -> t2) -> (t1 -> t2)
 // The Y-combinator has no type under the Hindley-Milner type system
 print(yCombinator.findType()); // null
