@@ -488,5 +488,5 @@ class _LambdaFragment {
   int depth;
 
   @override
-  String toString() => name != null ? 'λ$name' : 'λ_x$depth.';
+  String toString() => name != null ? 'λ$name.' : 'λ_x$depth.';
 }
