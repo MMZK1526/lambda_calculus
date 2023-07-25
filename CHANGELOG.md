@@ -17,6 +17,8 @@
 
 - Fix bugs in the parser.
 
+- Make `LambdaBuilder` and `Lambda` final.
+
 - More documentation.
 
 ## 1.2.0

@@ -174,7 +174,8 @@ class LambdaType {
     return LambdaType._(isArrow: true, type1: type1, type2: type2);
   }
 
-  /// Print out the type without redundant parentheses.
+  /// Print out the type without redundant parentheses and resetting all type
+  /// variable indices to 1, 2, 3, and so on.
   @override
   String toString() {
     final sb = StringBuffer();

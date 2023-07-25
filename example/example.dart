@@ -3,8 +3,8 @@
 import 'package:lambda_calculus/lambda_calculus.dart';
 
 void main(List<String> arguments) {
-  // This main function is a walkthrough for this lambda-calculus interpreter,
-  // assuming you already know about untyped lambda-calculus.
+  // This main function is a walkthrough for this lambda calculus interpreter,
+  // assuming you already know about lambda calculus.
   // Check out each function for more details.
 
   print('PART I:   UNTYPED LAMBDA CALCULUS\n');
@@ -25,6 +25,7 @@ void main(List<String> arguments) {
   print("The type for $m is ${m.findType()}");
   print("The type for ${Lambda.constants.and()} is "
       "${Lambda.constants.and().findType()}");
+  print('');
 }
 
 void _printExamples() {
