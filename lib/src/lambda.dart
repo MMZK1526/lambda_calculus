@@ -262,7 +262,9 @@ class Lambda implements ILambda<Lambda> {
             param;
         while (true) {
           lambdaStack.removeLast();
-          if (lambdaStack.isEmpty) break;
+          if (lambdaStack.isEmpty) {
+            break;
+          }
           if (lambdaStack.last.form == LambdaForm.abstraction) {
             isExp1Stack.removeLast();
             boundedVars.removeAt(0);

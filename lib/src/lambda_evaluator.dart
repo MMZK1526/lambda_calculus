@@ -124,7 +124,9 @@ extension LambdaEvaluationExtension on Lambda {
           }
         }
 
-        if (isReduced) return resultStack.first;
+        if (isReduced) {
+          return resultStack.first;
+        }
         break;
       case LambdaEvaluationType.callByName:
         final lambdaStack = [Pair(true, this)];
@@ -160,7 +162,9 @@ extension LambdaEvaluationExtension on Lambda {
           }
         }
 
-        if (isReduced) return resultStack.first;
+        if (isReduced) {
+          return resultStack.first;
+        }
         break;
       case LambdaEvaluationType.callByValue:
         final lambdaStack = [Pair(true, this)];
@@ -197,7 +201,9 @@ extension LambdaEvaluationExtension on Lambda {
           }
         }
 
-        if (isReduced) return resultStack.first;
+        if (isReduced) {
+          return resultStack.first;
+        }
         break;
     }
     return null;

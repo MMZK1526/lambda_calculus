@@ -137,7 +137,9 @@ List<_LambdaToken>? _lambdaLexer(String str) {
       case r'/':
       case r'\':
         bracketStack.last++;
-        if (!iterator.moveNext()) return null;
+        if (!iterator.moveNext()) {
+          return null;
+        }
 
         // MARK: Ignore Space
         while (blank.hasMatch(String.fromCharCode(iterator.current))) {
@@ -170,7 +172,9 @@ List<_LambdaToken>? _lambdaLexer(String str) {
 
           // MARK: Ignore Space
           while (blank.hasMatch(String.fromCharCode(iterator.current))) {
-            if (!iterator.moveNext()) return null;
+            if (!iterator.moveNext()) {
+              return null;
+            }
           }
 
           // MARK: Explicit Variable
@@ -217,7 +221,9 @@ List<_LambdaToken>? _lambdaLexer(String str) {
         break;
       default:
         // MARK: Ignore Space
-        if (blank.hasMatch(String.fromCharCode(iterator.current))) break;
+        if (blank.hasMatch(String.fromCharCode(iterator.current))) {
+          break;
+        }
 
         // MARK: Named Variable
         if (alpha.hasMatch(String.fromCharCode(iterator.current))) {
@@ -269,10 +275,14 @@ List<_LambdaToken>? _lambdaLexer(String str) {
           while (numeric.hasMatch(String.fromCharCode(iterator.current))) {
             index *= 10;
             index += int.parse(String.fromCharCode(iterator.current));
-            if (!iterator.moveNext()) break;
+            if (!iterator.moveNext()) {
+              break;
+            }
           }
           // Does not support De Bruijn Index for free variables.
-          if (index >= boundedVars.length) return null;
+          if (index >= boundedVars.length) {
+            return null;
+          }
           tokens.add(_LambdaToken(_LambdaTokenType.variable, index: index));
 
           if (iterator.current >= 0) {
@@ -309,7 +319,9 @@ Lambda? _lambdaParser(List<_LambdaToken> tokens) {
   // shadows an existing name).
   final varStack = <String?>[];
 
-  if (tokens.isEmpty) return null;
+  if (tokens.isEmpty) {
+    return null;
+  }
 
   // Shunting Yard Algorithm.
   for (final token in tokens) {
