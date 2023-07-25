@@ -44,7 +44,7 @@ final evalOneStep = twoTimesThree.eval1();
 final callByValueResult = twoTimesThree.eval();
 final callByNameResult = twoTimesThree.eval(LambdaEvaluationType.callByName);
 final fullReductionResult = twoTimesThree.eval(LambdaEvaluationType.fullReduction);
-print(fullReductionResult); // Same as `LambdaConstants.lambdaSix` or `6.toChurchNumber()`
+print(fullReductionResult); // Same as `LambdaConstants.six()` or `6.toChurchNumber()`
 
 // Find the type of a lambda expression;
 final term = r'\x. \y. x y'.toLambda()!;
