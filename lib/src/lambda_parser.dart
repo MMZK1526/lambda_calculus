@@ -34,7 +34,7 @@ extension ToLambdaExtension on String {
   ///   variable.
   /// - Use other symbols for "λ": `/a.\\b./c.b(a b c)`, we support slash and
   ///   backslash as well.
-  /// - Changing the doc to an arrow: `λa -> λb -> λc b (a b c)`.
+  /// - Changing the doc to an arrow: `λa b c -> b (a b c)`.
   /// - Use De Bruijn indices for variables: `λa. λb. λc. 2 (3 2 1)`. Here `1`,
   ///   `2`, and `3` are the De Bruijn indices for `c`, `b`, and `a`.
   /// - If we are only using the De Bruijn indices, we can omit the variable
@@ -408,6 +408,7 @@ Lambda? _lambdaParser(List<_LambdaToken> tokens) {
       );
       continue;
     }
+
     // MARK: Invalid Operator
     return null;
   }

@@ -100,7 +100,10 @@ extension LamdbaTypeExtension on Lambda {
           }
           final s1 = term1.value.substitute(term2.key)!.unify(
                 LambdaType._(
-                    isArrow: true, type1: term2.value, type2: freshType),
+                  isArrow: true,
+                  type1: term2.value,
+                  type2: freshType,
+                ),
               );
           if (s1 == null) {
             return null;
