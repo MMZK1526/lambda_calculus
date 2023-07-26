@@ -1,4 +1,4 @@
-## 1.3.0 (Unreleased)
+## 1.3.0
 
 - Modify the parsing syntax:
   1. Stop allowing abstractions without delimiters, *e.g.* `λx x` is not allowed
