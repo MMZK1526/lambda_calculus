@@ -2,6 +2,9 @@
 
 - Fix a concurrency bug in type inference.
 
+- The current type inference implementation is very nasty and inefficient. I
+  will rewrite it in the future.
+
 ## 1.3.0
 
 - Modify the parsing syntax:

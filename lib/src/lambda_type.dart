@@ -27,24 +27,29 @@ extension LamdbaTypeExtension on Lambda {
       return result;
     }
 
-    void substitute(
+    Map<List<List<int>>, LambdaType> substitute(
       Map<List<List<int>>, LambdaType> context,
       Map<int, LambdaType> substitution,
     ) {
-      for (final key in context.keys) {
-        context.update(key, (value) => value.substitute(substitution)!);
+      Map<List<List<int>>, LambdaType> newContext = LinkedHashMap(
+        equals: const DeepCollectionEquality().equals,
+        hashCode: (l) => Object.hashAll(l.map(Object.hashAll)),
+      );
+      final keys = context.keys;
+      for (final key in keys) {
+        newContext[key] = context[key]!.substitute(substitution)!;
       }
+
+      return newContext;
     }
 
     LambdaType useContext(
       Map<List<List<int>>, LambdaType> context,
       List<List<int>> curVar,
     ) {
-      context.update(
-        curVar,
-        (value) => value,
-        ifAbsent: () => getFreshType(context),
-      );
+      if (!context.containsKey(curVar)) {
+        context[curVar] = getFreshType(context);
+      }
 
       return context[curVar]!;
     }
@@ -92,7 +97,7 @@ extension LamdbaTypeExtension on Lambda {
           if (term1 == null) {
             return null;
           }
-          substitute(context, term1.key);
+          context = substitute(context, term1.key);
           final term2 =
               work(context, term.exp2!, List.of(curVar)..first.insert(0, 1));
           if (term2 == null) {
