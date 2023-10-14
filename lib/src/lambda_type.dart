@@ -31,9 +31,9 @@ extension LamdbaTypeExtension on Lambda {
       Map<List<List<int>>, LambdaType> context,
       Map<int, LambdaType> substitution,
     ) {
-      context.forEach((key, _) {
+      for (final key in context.keys) {
         context.update(key, (value) => value.substitute(substitution)!);
-      });
+      }
     }
 
     LambdaType useContext(
