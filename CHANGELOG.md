@@ -1,3 +1,7 @@
+## 1.3.1
+
+- Fix a concurrency bug in type inference.
+
 ## 1.3.0
 
 - Modify the parsing syntax:
