@@ -161,7 +161,6 @@ class Lambda implements ILambda<Lambda> {
             sb.add(curIndex);
           } else {
             sb.add('y');
-            sb.add(freshName);
             sb.add(1 - curIndex);
           }
           isLeftParen = null;
