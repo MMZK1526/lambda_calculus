@@ -23,6 +23,8 @@ void main(List<String> arguments) {
   print("The type for $l is ${l.findType()}");
   final m = r"\a. \b. \c. a c (b c)".toLambda()!;
   print("The type for $m is ${m.findType()}");
+  final n = r"\a. (\b.\c. b c) (\b.\c. c ) a".toLambda()!;
+  print("The type for $n is ${n.findType()}");
   print("The type for ${Lambda.constants.and()} is "
       "${Lambda.constants.and().findType()}");
   print('');

@@ -1,133 +1,105 @@
-import 'dart:collection';
-
-import 'package:collection/collection.dart';
 import 'package:lambda_calculus/src/lambda.dart';
 import 'package:lambda_calculus/src/lambda_form.dart';
 import 'package:lambda_calculus/src/utilities.dart';
+
+class _Counter {
+  int value = 0;
+}
+
+class _Context {
+  final Map<String, LambdaType> typeMap = {};
+  final _Counter _typeIndex;
+
+  _Context(_Counter counter) : _typeIndex = counter;
+
+  int get typeIndex => _typeIndex.value;
+  set typeIndex(int value) => _typeIndex.value = value;
+
+  LambdaType getFreshType() {
+    final result = LambdaType.fromVar(index: typeIndex);
+    typeIndex += 1;
+    return result;
+  }
+
+  void substitute(Map<int, LambdaType> substitution) {
+    for (final key in typeMap.keys) {
+      typeMap[key] = typeMap[key]!.substitute(substitution)!;
+    }
+  }
+
+  LambdaType useContext(int depth) {
+    final identifier = '$depth';
+    if (!typeMap.containsKey(identifier)) {
+      typeMap[identifier] = getFreshType();
+    }
+
+    return typeMap[identifier]!;
+  }
+
+  _Context copy() {
+    final result = _Context(_typeIndex);
+    result.typeMap.addAll(typeMap);
+    return result;
+  }
+}
 
 /// An extension to find the principal type of a [Lambda].
 extension LamdbaTypeExtension on Lambda {
   /// Find the principal type of the [Lambda].
   LambdaType? findType() {
-    LambdaType getFreshType(Map<List<List<int>>, LambdaType> context) {
-      late final LambdaType result;
-      context.update(
-        [
-          [7]
-        ],
-        (value) {
-          result = value;
-          return LambdaType._(isArrow: false, varIndex: value.varIndex! + 1);
-        },
-        ifAbsent: () {
-          result = const LambdaType._(isArrow: false, varIndex: 0);
-          return const LambdaType._(isArrow: false, varIndex: 1);
-        },
-      );
-      return result;
-    }
-
-    Map<List<List<int>>, LambdaType> substitute(
-      Map<List<List<int>>, LambdaType> context,
-      Map<int, LambdaType> substitution,
-    ) {
-      Map<List<List<int>>, LambdaType> newContext = LinkedHashMap(
-        equals: const DeepCollectionEquality().equals,
-        hashCode: (l) => Object.hashAll(l.map(Object.hashAll)),
-      );
-      final keys = context.keys;
-      for (final key in keys) {
-        newContext[key] = context[key]!.substitute(substitution)!;
-      }
-
-      return newContext;
-    }
-
-    LambdaType useContext(
-      Map<List<List<int>>, LambdaType> context,
-      List<List<int>> curVar,
-    ) {
-      if (!context.containsKey(curVar)) {
-        context[curVar] = getFreshType(context);
-      }
-
-      return context[curVar]!;
-    }
-
     /// TODO: Avoid recursion
     MapEntry<Map<int, LambdaType>, LambdaType>? work(
-      Map<List<List<int>>, LambdaType> context,
-      Lambda term,
-      List<List<int>> curVar,
-    ) {
+      _Context context,
+      Lambda term, [
+      int depth = 0,
+    ]) {
       switch (term.form) {
         case LambdaForm.variable:
-          final depth = term.index!;
-          if (depth >= curVar.length - 1) {
-            return MapEntry(
-              {},
-              useContext(context, [
-                [curVar.length - depth - 2]
-              ]),
-            );
-          }
-          return MapEntry({}, useContext(context, curVar.sublist(depth + 1)));
+          final varDepth = depth - term.index!;
+          return MapEntry({}, context.useContext(varDepth));
         case LambdaForm.abstraction:
-          final curType = useContext(context, curVar);
-          final redex = work(
-            context,
-            term.exp1!,
-            List.of(curVar)..insert(0, []),
-          );
-          if (redex != null) {
-            return MapEntry(
-              redex.key,
-              LambdaType._(
-                isArrow: true,
-                type1: curType,
-                type2: redex.value,
-              ).substitute(redex.key)!,
-            );
-          }
-          return null;
-        case LambdaForm.application:
-          final freshType = getFreshType(context);
-          final term1 =
-              work(context, term.exp1!, List.of(curVar)..first.insert(0, 0));
-          if (term1 == null) {
-            return null;
-          }
-          context = substitute(context, term1.key);
-          final term2 =
-              work(context, term.exp2!, List.of(curVar)..first.insert(0, 1));
-          if (term2 == null) {
-            return null;
-          }
-          final s1 = term1.value.substitute(term2.key)!.unify(
-                LambdaType._(
-                  isArrow: true,
-                  type1: term2.value,
-                  type2: freshType,
-                ),
-              );
-          if (s1 == null) {
+          final varType = context.useContext(depth + 1);
+          final pp = work(context, term.exp1!, depth + 1);
+          if (pp == null) {
             return null;
           }
           return MapEntry(
-            LambdaType.compose(s1, LambdaType.compose(term2.key, term1.key))!,
-            freshType.substitute(s1)!,
+            pp.key,
+            LambdaType.arrow(
+              type1: varType,
+              type2: pp.value,
+            ).substitute(pp.key)!,
+          );
+        case LambdaForm.application:
+          final backupContext = context.copy();
+          final pp1 = work(context, term.exp1!, depth);
+          if (pp1 == null) {
+            return null;
+          }
+          final sub1 = pp1.key;
+          backupContext.substitute(sub1);
+          final pp2 = work(backupContext, term.exp2!, depth);
+          if (pp2 == null) {
+            return null;
+          }
+          final sub2 = pp2.key;
+          final freshType = backupContext.getFreshType();
+          final sub3 = pp1.value.substitute(sub2)!.unify(
+                LambdaType.arrow(type1: pp2.value, type2: freshType),
+              );
+          if (sub3 == null) {
+            return null;
+          }
+          return MapEntry(
+            LambdaType.compose(sub3, LambdaType.compose(sub2, sub1))!,
+            freshType.substitute(sub3)!,
           );
       }
     }
 
-    return work(
-      LinkedHashMap(
-        equals: const DeepCollectionEquality().equals,
-        hashCode: (l) => Object.hashAll(l.map(Object.hashAll)),
-      ),
-      this,
-      [[]],
-    )?.value._clean();
+    final context = _Context(_Counter());
+    final result = work(context, this);
+    return result?.value._clean();
   }
 }
 
@@ -331,7 +303,6 @@ class LambdaType {
 
   LambdaType _clean() {
     final indexMap = <int, int>{};
-    // return this;
     return fmap<Solo<int>>(
       onVar: (lambdaType, freshIndex) {
         final newIndex = indexMap.putIfAbsent(
