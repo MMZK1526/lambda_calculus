@@ -27,6 +27,8 @@ void main(List<String> arguments) {
   print("The type for $n is ${n.findType()}");
   print("The type for ${Lambda.constants.and()} is "
       "${Lambda.constants.and().findType()}");
+  print("The type for ${Lambda.constants.yCombinator()} does not exist: "
+      "${Lambda.constants.yCombinator().findType()}");
   print('');
 }
 

@@ -16,7 +16,7 @@ class _Context {
   set typeIndex(int value) => _typeIndex.value = value;
 
   LambdaType getFreshType() {
-    final result = LambdaType.fromVar(index: typeIndex);
+    final result = LambdaType(typeIndex);
     typeIndex += 1;
     return result;
   }
@@ -113,6 +113,8 @@ class LambdaType {
   }) : assert((isArrow && type1 != null && type2 != null && varIndex == null) ||
             (!isArrow && type1 == null && type2 == null && varIndex != null));
 
+  LambdaType(int index) : this._(isArrow: false, varIndex: index);
+
   /// Is the type an arrow type?
   final bool isArrow;
 
@@ -142,6 +144,7 @@ class LambdaType {
   /// Construct a [LambdaType] from a type variable.
   ///
   /// Note that we don't have type variable names, so we use indices instead.
+  @Deprecated('Use [LambdaType] constructor instead')
   static LambdaType fromVar({required int index}) {
     return LambdaType._(isArrow: false, varIndex: index);
   }

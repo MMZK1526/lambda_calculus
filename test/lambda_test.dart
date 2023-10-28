@@ -172,23 +172,85 @@ void main() {
       Lambda.constants.and().findType(),
       LambdaType.arrow(
         type1: LambdaType.arrow(
-          type1: LambdaType.fromVar(index: 1),
+          type1: LambdaType(1),
           type2: LambdaType.arrow(
             type1: LambdaType.arrow(
-              type1: LambdaType.fromVar(index: 2),
+              type1: LambdaType(2),
               type2: LambdaType.arrow(
-                type1: LambdaType.fromVar(index: 3),
-                type2: LambdaType.fromVar(index: 3),
+                type1: LambdaType(3),
+                type2: LambdaType(3),
               ),
             ),
-            type2: LambdaType.fromVar(index: 4),
+            type2: LambdaType(4),
           ),
         ),
         type2: LambdaType.arrow(
-          type1: LambdaType.fromVar(index: 1),
-          type2: LambdaType.fromVar(index: 4),
+          type1: LambdaType(1),
+          type2: LambdaType(4),
         ),
       ),
     );
+    expect(
+      LambdaBuilder.abstract(
+        LambdaBuilder.abstract(
+          LambdaBuilder.applyAll([
+            LambdaBuilder.fromVar(name: 'b'),
+            LambdaBuilder.abstract(
+              LambdaBuilder.apply(
+                exp1: LambdaBuilder.fromVar(name: 'a'),
+                exp2: LambdaBuilder.fromVar(name: 'b'),
+              ),
+              'b',
+            ),
+            LambdaBuilder.abstract(
+              LambdaBuilder.apply(
+                exp1: LambdaBuilder.fromVar(name: 'a'),
+                exp2: LambdaBuilder.fromVar(name: 'b'),
+              ),
+              'b',
+            ),
+          ]),
+          'b',
+        ),
+        'a',
+      ).build().findType(),
+      LambdaType.arrow(
+        type1: LambdaType.arrow(
+          type1: LambdaType(1),
+          type2: LambdaType(2),
+        ),
+        type2: LambdaType.arrow(
+          type1: LambdaType.arrow(
+            type1: LambdaType.arrow(
+              type1: LambdaType(1),
+              type2: LambdaType(2),
+            ),
+            type2: LambdaType.arrow(
+              type1: LambdaType.arrow(
+                type1: LambdaType(1),
+                type2: LambdaType(2),
+              ),
+              type2: LambdaType(3),
+            ),
+          ),
+          type2: LambdaType(3),
+        ),
+      ),
+    );
+    for (final int i in Iterable.generate(10)) {
+      expect(
+        (i + 2).toChurchNumber().findType(),
+        LambdaType.arrow(
+          type1: LambdaType.arrow(
+            type1: LambdaType(1),
+            type2: LambdaType(1),
+          ),
+          type2: LambdaType.arrow(
+            type1: LambdaType(1),
+            type2: LambdaType(1),
+          ),
+        ),
+      );
+    }
   });
 }
