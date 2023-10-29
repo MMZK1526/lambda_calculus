@@ -1,3 +1,11 @@
+## 1.3.3
+
+- Reimplement type inference using a more efficient data structure.
+
+- Remove now unused `collection` dependency.
+
+- Deprecate the `LambdaType.fromVar`. Use the constructor instead.
+
 ## 1.3.2
 
 - Fix a concurrency bug in type inference.
