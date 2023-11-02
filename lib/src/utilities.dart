@@ -1,4 +1,4 @@
-/// Generic mutabl solo class.
+/// Generic mutable solo class.
 class Solo<T> {
   T value;
 
