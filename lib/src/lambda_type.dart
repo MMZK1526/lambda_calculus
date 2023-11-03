@@ -48,7 +48,7 @@ extension LamdbaTypeExtension on Lambda {
   /// Find the principal type of the [Lambda].
   LambdaType? findType() {
     /// TODO: Avoid recursion
-    MapEntry<Map<int, LambdaType>, LambdaType>? work(
+    Pair<Map<int, LambdaType>, LambdaType>? work(
       _Context context,
       Lambda term, [
       int depth = 0,
@@ -56,19 +56,19 @@ extension LamdbaTypeExtension on Lambda {
       switch (term.form) {
         case LambdaForm.variable:
           final varDepth = depth - term.index!;
-          return MapEntry({}, context.useContext(varDepth));
+          return Pair({}, context.useContext(varDepth));
         case LambdaForm.abstraction:
           final varType = context.useContext(depth + 1);
           final pp = work(context, term.exp1!, depth + 1);
           if (pp == null) {
             return null;
           }
-          return MapEntry(
-            pp.key,
+          return Pair(
+            pp.first,
             LambdaType.arrow(
               type1: varType,
-              type2: pp.value,
-            ).substitute(pp.key)!,
+              type2: pp.second,
+            ).substitute(pp.first)!,
           );
         case LambdaForm.application:
           final backupContext = context.copy();
@@ -76,21 +76,21 @@ extension LamdbaTypeExtension on Lambda {
           if (pp1 == null) {
             return null;
           }
-          final sub1 = pp1.key;
+          final sub1 = pp1.first;
           backupContext.substitute(sub1);
           final pp2 = work(backupContext, term.exp2!, depth);
           if (pp2 == null) {
             return null;
           }
-          final sub2 = pp2.key;
+          final sub2 = pp2.first;
           final freshType = backupContext.getFreshType();
-          final sub3 = pp1.value.substitute(sub2)!.unify(
-                LambdaType.arrow(type1: pp2.value, type2: freshType),
+          final sub3 = pp1.second.substitute(sub2)!.unify(
+                LambdaType.arrow(type1: pp2.second, type2: freshType),
               );
           if (sub3 == null) {
             return null;
           }
-          return MapEntry(
+          return Pair(
             LambdaType.compose(sub3, LambdaType.compose(sub2, sub1))!,
             freshType.substitute(sub3)!,
           );
@@ -99,7 +99,7 @@ extension LamdbaTypeExtension on Lambda {
 
     final context = _Context(_Counter());
     final result = work(context, this);
-    return result?.value._clean();
+    return result?.second._clean();
   }
 }
 
