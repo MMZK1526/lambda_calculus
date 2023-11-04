@@ -1,3 +1,7 @@
+## 1.3.4
+
+- A temporary patch to evade the bug https://github.com/dart-lang/sdk/issues/53944.
+
 ## 1.3.3
 
 - Reimplement type inference using a more efficient data structure.
