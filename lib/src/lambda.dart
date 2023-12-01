@@ -152,14 +152,16 @@ class Lambda implements ILambda<Lambda> {
             sb.add(' ');
           }
           if (cur.third.name != null &&
-              variableDepths[cur.third.name]?.isNotEmpty == true &&
-              variableDepths[cur.third.name]!.last == curIndex) {
+              (curIndex <= 0 ||
+                  (variableDepths[cur.third.name]?.isNotEmpty == true &&
+                      variableDepths[cur.third.name]!.last == curIndex))) {
             sb.add(cur.third.name!);
           } else if (curIndex > 0) {
             boundVariables[curIndex - 1].name = null;
             sb.add(freshName);
             sb.add(curIndex);
           } else {
+            sb.add(freshName);
             sb.add('y');
             sb.add(1 - curIndex);
           }

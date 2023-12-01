@@ -163,7 +163,8 @@ void main() {
   test('Lambda Print Test', () {
     for (final _ in Iterable.generate(14)) {
       final lambda = arbitraryLambda();
-      expect(lambda.toString().toLambda(), lambda);
+      expect(lambda.toString().toLambda()!.toStringNameless(),
+          lambda.toStringNameless());
     }
   });
 
