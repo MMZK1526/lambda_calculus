@@ -55,6 +55,7 @@ enum _LambdaTokenType {
   lbrace,
   rbrace,
   variable,
+  dummy,
 }
 
 /// The class representing lambda tokens after lexing.
@@ -79,6 +80,8 @@ class _LambdaToken {
         return '{(}';
       case _LambdaTokenType.rbrace:
         return '{)}';
+      case _LambdaTokenType.dummy:
+        return '{?}';
       case _LambdaTokenType.variable:
         return '{x$index}';
     }
@@ -89,7 +92,7 @@ class _LambdaToken {
 ///
 /// Returns null only if the [String] is not a valid lambda expression.
 List<_LambdaToken>? _lambdaLexer(String str) {
-  final tokens = <_LambdaToken>[];
+  final tokens = [_LambdaToken(_LambdaTokenType.dummy)];
   final iterator = str.runes.iterator;
   final boundedVars = <String>[];
   final freeVars = <String>[];
@@ -303,8 +306,17 @@ List<_LambdaToken>? _lambdaLexer(String str) {
     }
   }
 
-  // Trim for potential final space.
-  if (tokens.last.type == _LambdaTokenType.space) tokens.removeLast();
+  tokens.add(_LambdaToken(_LambdaTokenType.dummy));
+
+  // Trim for invalid spaces.
+  for (final i in List.generate(tokens.length, (i) => i)) {
+    if (tokens[i].type == _LambdaTokenType.space) {
+      if (tokens[i - 1].type == _LambdaTokenType.lbrace ||
+          tokens[i + 1].type == _LambdaTokenType.rbrace) {
+        tokens[i] = _LambdaToken(_LambdaTokenType.dummy);
+      }
+    }
+  }
 
   return tokens;
 }
@@ -326,6 +338,8 @@ Lambda? _lambdaParser(List<_LambdaToken> tokens) {
   // Shunting Yard Algorithm.
   for (final token in tokens) {
     switch (token.type) {
+      case _LambdaTokenType.dummy:
+        break;
       // MARK: Lambda
       // Has lowest precedence.
       case _LambdaTokenType.lambda:

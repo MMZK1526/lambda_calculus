@@ -1,3 +1,10 @@
+## 1.3.5
+
+- Fixed a parser bug.
+  - Will rewrite the parser in later versions.
+
+- Better printing of free variables, retaining their names.
+
 ## 1.3.4
 
 - A temporary patch to evade the bug https://github.com/dart-lang/sdk/issues/53944.
