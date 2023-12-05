@@ -272,10 +272,7 @@ class Lambda implements ILambda<Lambda> {
             param = onAbsExit?.call(param, boundedVars.length) ?? param;
           } else if (isExp1Stack.last) {
             lambdaStack.add(lambdaStack.last.exp2!);
-            // https://github.com/dart-lang/sdk/issues/53944
-            isExp1Stack.removeLast();
-            isExp1Stack.add(false);
-            // isExp1Stack.last = false;
+            isExp1Stack.last = false;
             param = onAppExit?.call(param, boundedVars.length) ?? param;
             param = onAppEnter?.call(param, boundedVars.length) ?? param;
             break;

@@ -1,3 +1,7 @@
+## 1.3.6
+
+- Revert due to the upstream https://github.com/dart-lang/sdk/issues/53944 is fixed.
+
 ## 1.3.5
 
 - Fixed a parser bug.

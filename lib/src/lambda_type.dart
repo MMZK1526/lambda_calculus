@@ -183,10 +183,7 @@ class LambdaType {
             break;
           }
           if (isExp1Stack.last) {
-            // https://github.com/dart-lang/sdk/issues/53944
-            isExp1Stack.removeLast();
-            isExp1Stack.add(false);
-            // isExp1Stack.last = false;
+            isExp1Stack.last = false;
             useBracesStack.removeLast();
             sb.write(" -> ");
             typeStack.add(typeStack.last.type2!);
