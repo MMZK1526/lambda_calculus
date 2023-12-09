@@ -23,7 +23,7 @@ class _Context {
 
   void substitute(Map<int, LambdaType> substitution) {
     for (final key in typeMap.keys) {
-      typeMap[key] = typeMap[key]!.substitute(substitution)!;
+      typeMap[key] = typeMap[key]!._substitute(substitution);
     }
   }
 
@@ -68,7 +68,7 @@ extension LamdbaTypeExtension on Lambda {
             LambdaType.arrow(
               type1: varType,
               type2: pp.second,
-            ).substitute(pp.first)!,
+            )._substitute(pp.first),
           );
         case LambdaForm.application:
           final backupContext = context.copy();
@@ -84,7 +84,7 @@ extension LamdbaTypeExtension on Lambda {
           }
           final sub2 = pp2.first;
           final freshType = backupContext.getFreshType();
-          final sub3 = pp1.second.substitute(sub2)!.unify(
+          final sub3 = pp1.second._substitute(sub2).unify(
                 LambdaType.arrow(type1: pp2.second, type2: freshType),
               );
           if (sub3 == null) {
@@ -92,7 +92,7 @@ extension LamdbaTypeExtension on Lambda {
           }
           return Pair(
             LambdaType.compose(sub3, LambdaType.compose(sub2, sub1))!,
-            freshType.substitute(sub3)!,
+            freshType._substitute(sub3),
           );
       }
     }
@@ -137,7 +137,7 @@ class LambdaType {
       return null;
     }
 
-    return s1.map((key, value) => MapEntry(key, value.substitute(s2)!))
+    return s1.map((key, value) => MapEntry(key, value._substitute(s2)))
       ..addAll(s2..removeWhere((key, _) => s1.containsKey(key)));
   }
 
@@ -266,10 +266,10 @@ class LambdaType {
   }
 
   /// Substitute with the given substitution.
-  LambdaType? substitute(Map<int, LambdaType>? substitution) {
+  LambdaType _substitute(Map<int, LambdaType> substitution) {
     return fmap<void>(
       onVar: (lambdaType, _) =>
-          substitution![lambdaType.varIndex!] ?? lambdaType,
+          substitution[lambdaType.varIndex!] ?? lambdaType,
     );
   }
 
@@ -280,22 +280,22 @@ class LambdaType {
       return null;
     }
 
-    Map<int, LambdaType>? result = {};
+    Map<int, LambdaType> result = {};
     final List<Pair<LambdaType, LambdaType>> pairs = [Pair(this, other)];
 
     while (pairs.isNotEmpty) {
       final curPair = pairs.removeAt(0);
-      final curThis = curPair.first.substitute(result);
-      final curOther = curPair.second.substitute(result);
-
-      if (curThis == null || curOther == null) {
-        return null;
-      }
+      final curThis = curPair.first._substitute(result);
+      final curOther = curPair.second._substitute(result);
 
       if (!curThis.isArrow) {
         if (curThis.varIndex == curOther.varIndex ||
             !curOther.contains(curThis.varIndex!)) {
-          result = compose({curThis.varIndex!: curOther}, result);
+          final composed = compose({curThis.varIndex!: curOther}, result);
+          if (composed == null) {
+            return null;
+          }
+          result = composed;
         } else {
           return null;
         }
