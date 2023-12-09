@@ -275,33 +275,40 @@ class LambdaType {
 
   /// Unify `this` with the given [LambdaType], returning a substitution if
   /// possible.
-  ///
-  /// TODO: avoid recursion
   Map<int, LambdaType>? unify(LambdaType? other) {
     if (other == null) {
       return null;
     }
 
-    if (!isArrow) {
-      if (varIndex == other.varIndex || !other.contains(varIndex!)) {
-        return {varIndex!: other};
+    Map<int, LambdaType>? result = {};
+    final List<Pair<LambdaType, LambdaType>> pairs = [Pair(this, other)];
+
+    while (pairs.isNotEmpty) {
+      final curPair = pairs.removeAt(0);
+      final curThis = curPair.first.substitute(result);
+      final curOther = curPair.second.substitute(result);
+
+      if (curThis == null || curOther == null) {
+        return null;
       }
 
-      return null;
-    }
-
-    if (!other.isArrow) {
-      if (varIndex == other.varIndex || !contains(other.varIndex!)) {
-        return {other.varIndex!: this};
+      if (!curThis.isArrow) {
+        if (curThis.varIndex == curOther.varIndex ||
+            !curOther.contains(curThis.varIndex!)) {
+          result = compose({curThis.varIndex!: curOther}, result);
+        } else {
+          return null;
+        }
+      } else if (!curOther.isArrow) {
+        pairs.insert(0, Pair(curOther, curThis));
+        continue;
+      } else {
+        pairs.insert(0, Pair(curThis.type2!, curOther.type2!));
+        pairs.insert(0, Pair(curThis.type1!, curOther.type1!));
       }
-
-      return null;
     }
 
-    final s1 = type1!.unify(other.type1!);
-    final s2 = type2!.substitute(s1)?.unify(other.type2!.substitute(s1));
-
-    return compose(s2, s1);
+    return result;
   }
 
   LambdaType _clean() {
